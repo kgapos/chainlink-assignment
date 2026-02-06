@@ -132,7 +132,7 @@
       },
       "targets": [
         {
-          "expr": "{job=\"docker\"}",
+          "expr": "{container=\"node\"}",
           "refId": "A"
         }
       ],
