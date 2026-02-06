@@ -5,11 +5,22 @@
     "dictionaries": [],
     "words": [
         "Chainlink",
+        "dedup",
+        "ingester",
+        "inmemory",
+        "kvstore",
+        "lifecycler",
+        "logdb",
         "Promtail",
+        "rgba",
+        "timepicker",
+        "txpool",
         "vechain"
     ],
     "ignoreWords": [
-        "prometheusremotewrite"
+        "boltdb",
+        "prometheusremotewrite",
+        "telemetrygen"
     ],
     "import": []
 }
