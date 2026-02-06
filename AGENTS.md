@@ -199,6 +199,7 @@ Example configuration layout:
 - `docker compose pull` to validate image access.
 - `docker compose up -d` to ensure services start.
 - `docker compose ps` to confirm healthy status.
+- `docker logs -n 20 node` to confirm VeChain node is running and syncing.
 
 ## Notes
 

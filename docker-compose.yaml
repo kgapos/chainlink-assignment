@@ -3,6 +3,7 @@ services:
     image: vechain/thor:v2.4.1
     container_name: node
     restart: unless-stopped
+    user: "1000:1000"
     volumes:
       - thor_data:/home/thor/.org.vechain.thor
     ports:
@@ -28,6 +29,18 @@ services:
       - --api-slow-queries-threshold=5000
       - --disable-pruner
       - --logdb-additional-indexes
+    depends_on:
+      thor-init:
+        condition: service_completed_successfully
+    networks:
+      - observability
+
+  thor-init:
+    image: alpine:3.19
+    command: ["sh", "-c", "chown -R 1000:1000 /home/thor/.org.vechain.thor"]
+    user: "0:0"
+    volumes:
+      - thor_data:/home/thor/.org.vechain.thor
     networks:
       - observability
 
