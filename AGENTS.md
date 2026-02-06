@@ -1,10 +1,10 @@
 # Designing an End-to-End Observability Pipeline (Local)
 
 ## Goal
-Design and document a complete local observability pipeline that ingests and stores metrics, logs, and traces from a VeChain node. The system runs entirely on a local Kubernetes cluster, receives OTLP telemetry, and persists data via PersistentVolumes.
+Design and document a complete local observability pipeline that ingests and stores metrics, logs, and traces from a VeChain node. The system runs entirely on Docker Compose, receives OTLP telemetry, and persists data via local Docker volumes.
 
 ## Architecture Overview
-Local Kubernetes distribution: `kind` (Kubernetes-in-Docker) with `local-path` storage class.
+Local container orchestration: Docker Compose with named volumes for persistence.
 
 Core components:
 - **OpenTelemetry Collector** (gateway): OTLP ingestion, processing, routing.
@@ -18,28 +18,28 @@ Signal ingress:
 - **Prometheus pull** for metrics scraping (VeChain node exposes `/metrics` when enabled).
 
 Persistence:
-- Prometheus TSDB -> PV
-- Loki chunks + index -> PV
-- Tempo blocks + WAL -> PV
-- Grafana dashboards -> PV
+- Prometheus TSDB -> Docker volume
+- Loki chunks + index -> Docker volume
+- Tempo blocks + WAL -> Docker volume
+- Grafana dashboards -> Docker volume
 
 ## Logical Pipelines
 
 ### Metrics Pipeline
 1. VeChain node exposes `/metrics` (Prometheus format).
-2. Prometheus scrapes targets discovered via Kubernetes service discovery.
-3. Prometheus stores metrics in local PV-backed TSDB.
+2. Prometheus scrapes targets defined in static configs (Compose network DNS).
+3. Prometheus stores metrics in local volume-backed TSDB.
 4. OTel Collector can also accept OTLP metrics and remote_write to Prometheus (optional).
 
 ### Logs Pipeline
 1. VeChain node emits stdout/stderr to container logs.
 2. Promtail tails container logs and forwards to Loki.
-3. Loki stores logs locally with PV-backed chunks and index.
+3. Loki stores logs locally with volume-backed chunks and index.
 
 ### Traces Pipeline
 1. VeChain node (or a small wrapper process) sends OTLP traces.
 2. OTel Collector receives, batches, and forwards to Tempo.
-3. Tempo stores traces in PV-backed blocks with WAL.
+3. Tempo stores traces in volume-backed blocks with WAL.
 
 ## Dataflow Diagrams
 
@@ -67,7 +67,7 @@ Persistence:
         +------+------+                    +------+------+  
                |                                 |
                v                                 v
-        PV-backed storage                  PV-backed TSDB
+        Docker volume storage             Docker volume TSDB
 
                     +----------------+
                     |     Loki       |
@@ -75,7 +75,7 @@ Persistence:
                     +-------+--------+
                             |
                             v
-                     PV-backed storage
+                     Docker volume storage
 
                 +----------------------+
                 |      Grafana         |
@@ -83,7 +83,7 @@ Persistence:
                 +----------+-----------+
                            |
                            v
-                   PV-backed storage
+                    Docker volume storage
 ```
 
 ### Sequence Diagram (OTLP Traces)
@@ -91,7 +91,7 @@ Persistence:
 VeChain Node -> OTel Collector: OTLP trace spans
 OTel Collector -> OTel Collector: batch/attributes sampling
 OTel Collector -> Tempo: OTLP export
-Tempo -> PV: write WAL + blocks
+Tempo -> Docker volume: write WAL + blocks
 Grafana -> Tempo: query trace by trace_id
 ```
 
@@ -99,7 +99,7 @@ Grafana -> Tempo: query trace by trace_id
 ```
 Prometheus -> VeChain Node: GET /metrics
 VeChain Node -> Prometheus: Prometheus text exposition
-Prometheus -> PV: append TSDB blocks
+Prometheus -> Docker volume: append TSDB blocks
 Grafana -> Prometheus: query metrics (PromQL)
 ```
 
@@ -108,28 +108,25 @@ Grafana -> Prometheus: query metrics (PromQL)
 VeChain Node -> Container runtime: stdout/stderr
 Promtail -> Container runtime: tail logs
 Promtail -> Loki: push batches
-Loki -> PV: store chunks + index
+Loki -> Docker volume: store chunks + index
 Grafana -> Loki: query logs (LogQL)
 ```
 
-## Local Kubernetes Stack
+## Local Docker Compose Stack
 
-Recommended versions (example):
-- Kubernetes: `kind v0.22+`
+Recommended versions (example images):
 - OpenTelemetry Collector: `otel/opentelemetry-collector-contrib`
 - Prometheus: `prom/prometheus`
 - Loki: `grafana/loki`
 - Tempo: `grafana/tempo`
 - Grafana: `grafana/grafana`
 
-Key services (namespaces suggested):
-- `observability`: otel-collector, prometheus, loki, tempo, grafana, promtail
-- `apps`: vechain node with OTLP + /metrics
+Services (Compose):
+- `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `promtail`, `vechain-node`
 
 ## Storage & Persistence
 
-Use a `StorageClass` backed by `local-path` (default in kind) and create
-PVCs for Prometheus, Loki, Tempo, and Grafana.
+Use named Docker volumes for Prometheus, Loki, Tempo, and Grafana.
 
 Persistence plan:
 - Prometheus: TSDB data
@@ -165,27 +162,26 @@ Suggested alerts:
 
 ## Reliability & Operability Practices
 
-- Use resource requests/limits to avoid noisy neighbor issues.
-- Use `PodDisruptionBudget` for core services (single-node friendly).
-- Add `PodSecurityContext` and run as non-root where possible.
-- Keep configuration in ConfigMaps with versioned values.
+- Use resource limits to avoid noisy neighbor issues.
+- Run containers as non-root where possible.
+- Keep configuration in versioned files mounted as read-only.
 
 ## Optional Proof-of-Concept (Bonus)
 
 Example demo app:
-- `vechain-node` deployment configured to emit OTLP traces and expose `/metrics`.
+- `vechain-node` service configured to emit OTLP traces and expose `/metrics`.
 
 Example configuration layout:
-- `k8s/otel-collector.yaml`
-- `k8s/prometheus.yaml`
-- `k8s/loki.yaml`
-- `k8s/tempo.yaml`
-- `k8s/grafana.yaml`
-- `k8s/vechain-node.yaml`
+- `docker-compose.yaml`
+- `otel-collector.yaml`
+- `prometheus.yaml`
+- `loki.yaml`
+- `tempo.yaml`
+- `grafana.yaml`
 
 ## Validation Checklist
 
-- `kubectl get pods -n observability` shows all pods ready.
+- `docker compose ps` shows all services healthy.
 - Grafana connects to Prometheus, Loki, and Tempo.
 - Metrics visible in Prometheus and Grafana.
 - Logs visible in Loki and Grafana.
@@ -195,6 +191,6 @@ Example configuration layout:
 
 This design keeps everything local while preserving real-world practices:
 OTLP ingestion at a centralized gateway, pull-based Prometheus scraping,
-and PV-backed storage for durable observability data. The stack can be
+and volume-backed storage for durable observability data. The stack can be
 expanded by adding scaling, retention policies, and additional processors
 or exporters in the OTel Collector.
