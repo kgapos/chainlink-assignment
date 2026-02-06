@@ -14,7 +14,7 @@ Core components:
 - **Visualization**: Grafana.
 
 Signal ingress:
-- **OTLP gRPC/HTTP** from the VeChain node to the OTel Collector gateway.
+- **OTLP gRPC/HTTP** from a sidecar trace generator to the OTel Collector gateway.
 - **Prometheus pull** for metrics scraping (VeChain node exposes `/metrics` when enabled).
 
 Persistence:
@@ -37,7 +37,7 @@ Persistence:
 3. Loki stores logs locally with volume-backed chunks and index.
 
 ### Traces Pipeline
-1. VeChain node (or a small wrapper process) sends OTLP traces.
+1. A sidecar trace generator emits OTLP traces to the OTel Collector.
 2. OTel Collector receives, batches, and forwards to Tempo.
 3. Tempo stores traces in volume-backed blocks with WAL.
 
@@ -47,7 +47,8 @@ Persistence:
 ```
                 +---------------------------+
                 |        VeChain Node       |
-                |  (metrics/logs/traces)    |
+                | (metrics/logs) + Sidecar  |
+                |       (traces)            |
                 +-------------+-------------+
                               |
                  OTLP gRPC/HTTP|   /metrics
@@ -88,7 +89,7 @@ Persistence:
 
 ### Sequence Diagram (OTLP Traces)
 ```
-VeChain Node -> OTel Collector: OTLP trace spans
+Trace Sidecar -> OTel Collector: OTLP trace spans
 OTel Collector -> OTel Collector: batch/attributes sampling
 OTel Collector -> Tempo: OTLP export
 Tempo -> Docker volume: write WAL + blocks
@@ -122,17 +123,18 @@ Recommended versions (example images):
 - Grafana: `grafana/grafana`
 
 Services (Compose):
-- `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `promtail`, `vechain-node`
+- `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `promtail`, `vechain-node`, `trace-sidecar`
 
 ## Storage & Persistence
 
-Use named Docker volumes for Prometheus, Loki, Tempo, and Grafana.
+Use named Docker volumes for Prometheus, Loki, Tempo, Grafana, and VeChain node data.
 
 Persistence plan:
 - Prometheus: TSDB data
 - Loki: chunks + index
 - Tempo: WAL + blocks
 - Grafana: dashboards and sqlite
+- VeChain node: chain data (`thor_data`)
 
 ## OTLP Ingestion
 
@@ -169,7 +171,8 @@ Suggested alerts:
 ## Optional Proof-of-Concept (Bonus)
 
 Example demo app:
-- `vechain-node` service configured to emit OTLP traces and expose `/metrics`.
+- `vechain-node` service configured to expose `/metrics` and emit logs.
+- `trace-sidecar` service configured to emit OTLP traces.
 
 Example configuration layout:
 - `docker-compose.yaml`
@@ -178,6 +181,10 @@ Example configuration layout:
 - `loki.yaml`
 - `tempo.yaml`
 - `grafana.yaml`
+- `promtail.yaml`
+- `grafana/datasources.yaml`
+- `grafana/dashboards.yaml`
+- `grafana/dashboards/overview.json`
 
 ## Validation Checklist
 
@@ -194,3 +201,11 @@ OTLP ingestion at a centralized gateway, pull-based Prometheus scraping,
 and volume-backed storage for durable observability data. The stack can be
 expanded by adding scaling, retention policies, and additional processors
 or exporters in the OTel Collector.
+
+## Design Guardrails
+
+- Use Docker Compose for local orchestration.
+- Use named volumes for persistence, including `thor_data`.
+- Use Promtail for log shipping to Loki.
+- Use a trace sidecar to emit OTLP traces (VeChain node does not emit traces).
+- Auto-provision Grafana data sources and at least one starter dashboard.
