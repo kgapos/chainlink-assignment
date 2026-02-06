@@ -194,6 +194,12 @@ Example configuration layout:
 - Logs visible in Loki and Grafana.
 - Traces visible in Tempo and Grafana.
 
+## Basic Tests After Changes
+
+- `docker compose pull` to validate image access.
+- `docker compose up -d` to ensure services start.
+- `docker compose ps` to confirm healthy status.
+
 ## Notes
 
 This design keeps everything local while preserving real-world practices:
