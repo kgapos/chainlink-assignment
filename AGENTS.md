@@ -1,7 +1,7 @@
 # Designing an End-to-End Observability Pipeline (Local)
 
 ## Goal
-Design and document a complete local observability pipeline that ingests and stores metrics, logs, and traces from applications. The system runs entirely on a local Kubernetes cluster, receives OTLP telemetry, and persists data via PersistentVolumes.
+Design and document a complete local observability pipeline that ingests and stores metrics, logs, and traces from a VeChain node. The system runs entirely on a local Kubernetes cluster, receives OTLP telemetry, and persists data via PersistentVolumes.
 
 ## Architecture Overview
 Local Kubernetes distribution: `kind` (Kubernetes-in-Docker) with `local-path` storage class.
@@ -14,8 +14,8 @@ Core components:
 - **Visualization**: Grafana.
 
 Signal ingress:
-- **OTLP gRPC/HTTP** to the OTel Collector gateway.
-- **Prometheus pull** for metrics scraping (apps expose `/metrics`).
+- **OTLP gRPC/HTTP** from the VeChain node to the OTel Collector gateway.
+- **Prometheus pull** for metrics scraping (VeChain node exposes `/metrics` when enabled).
 
 Persistence:
 - Prometheus TSDB -> PV
@@ -26,18 +26,18 @@ Persistence:
 ## Logical Pipelines
 
 ### Metrics Pipeline
-1. Apps expose `/metrics` (Prometheus format).
+1. VeChain node exposes `/metrics` (Prometheus format).
 2. Prometheus scrapes targets discovered via Kubernetes service discovery.
 3. Prometheus stores metrics in local PV-backed TSDB.
 4. OTel Collector can also accept OTLP metrics and remote_write to Prometheus (optional).
 
 ### Logs Pipeline
-1. Apps emit stdout/stderr to container logs.
+1. VeChain node emits stdout/stderr to container logs.
 2. Promtail tails container logs and forwards to Loki.
 3. Loki stores logs locally with PV-backed chunks and index.
 
 ### Traces Pipeline
-1. Apps instrumented with OpenTelemetry SDKs send OTLP traces.
+1. VeChain node (or a small wrapper process) sends OTLP traces.
 2. OTel Collector receives, batches, and forwards to Tempo.
 3. Tempo stores traces in PV-backed blocks with WAL.
 
@@ -46,7 +46,7 @@ Persistence:
 ### Context Diagram
 ```
                 +---------------------------+
-                |      Developer Apps       |
+                |        VeChain Node       |
                 |  (metrics/logs/traces)    |
                 +-------------+-------------+
                               |
@@ -88,7 +88,7 @@ Persistence:
 
 ### Sequence Diagram (OTLP Traces)
 ```
-App -> OTel Collector: OTLP trace spans
+VeChain Node -> OTel Collector: OTLP trace spans
 OTel Collector -> OTel Collector: batch/attributes sampling
 OTel Collector -> Tempo: OTLP export
 Tempo -> PV: write WAL + blocks
@@ -97,15 +97,15 @@ Grafana -> Tempo: query trace by trace_id
 
 ### Sequence Diagram (Prometheus Metrics)
 ```
-Prometheus -> App: GET /metrics
-App -> Prometheus: Prometheus text exposition
+Prometheus -> VeChain Node: GET /metrics
+VeChain Node -> Prometheus: Prometheus text exposition
 Prometheus -> PV: append TSDB blocks
 Grafana -> Prometheus: query metrics (PromQL)
 ```
 
 ### Sequence Diagram (Logs)
 ```
-App -> Container runtime: stdout/stderr
+VeChain Node -> Container runtime: stdout/stderr
 Promtail -> Container runtime: tail logs
 Promtail -> Loki: push batches
 Loki -> PV: store chunks + index
@@ -124,7 +124,7 @@ Recommended versions (example):
 
 Key services (namespaces suggested):
 - `observability`: otel-collector, prometheus, loki, tempo, grafana, promtail
-- `apps`: demo apps with OTLP + /metrics
+- `apps`: vechain node with OTLP + /metrics
 
 ## Storage & Persistence
 
@@ -172,9 +172,8 @@ Suggested alerts:
 
 ## Optional Proof-of-Concept (Bonus)
 
-Example demo apps:
-- `otel-demo` or a minimal Go/Node app exporting OTLP traces and metrics.
-- Expose `/metrics` for Prometheus scraping.
+Example demo app:
+- `vechain-node` deployment configured to emit OTLP traces and expose `/metrics`.
 
 Example configuration layout:
 - `k8s/otel-collector.yaml`
@@ -182,7 +181,7 @@ Example configuration layout:
 - `k8s/loki.yaml`
 - `k8s/tempo.yaml`
 - `k8s/grafana.yaml`
-- `k8s/apps-demo.yaml`
+- `k8s/vechain-node.yaml`
 
 ## Validation Checklist
 
