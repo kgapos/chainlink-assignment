@@ -123,18 +123,19 @@ Recommended versions (example images):
 - Grafana: `grafana/grafana`
 
 Services (Compose):
-- `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `promtail`, `vechain-node`, `trace-sidecar`
+- `nginx`, `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `promtail`, `node-a`, `node-b`, `trace-sidecar`
 
 ## Storage & Persistence
 
-Use named Docker volumes for Prometheus, Loki, Tempo, Grafana, and VeChain node data.
+Use named Docker volumes for Prometheus, Loki, Tempo, Grafana, and per-node VeChain data.
 
 Persistence plan:
 - Prometheus: TSDB data
 - Loki: chunks + index
 - Tempo: WAL + blocks
 - Grafana: dashboards and sqlite
-- VeChain node: chain data (`thor_data`)
+- VeChain node A: chain data (`thor_data_a`)
+- VeChain node B: chain data (`thor_data_b`)
 
 ## OTLP Ingestion
 
@@ -171,7 +172,8 @@ Suggested alerts:
 ## Optional Proof-of-Concept (Bonus)
 
 Example demo app:
-- `vechain-node` service configured to expose `/metrics` and emit logs.
+- `node-a` and `node-b` services configured to expose `/metrics` and emit logs.
+- `nginx` service load-balances public API traffic to `node-a` and `node-b`.
 - `trace-sidecar` service configured to emit OTLP traces.
 
 Example configuration layout:
@@ -199,7 +201,7 @@ Example configuration layout:
 - `docker compose pull` to validate image access.
 - `docker compose up -d` to ensure services start.
 - `docker compose ps` to confirm healthy status.
-- `docker logs -n 20 node` to confirm VeChain node is running and syncing.
+- `docker logs -n 20 node-a` and `docker logs -n 20 node-b` to confirm nodes are running and syncing.
 
 ## Notes
 
@@ -212,7 +214,9 @@ or exporters in the OTel Collector.
 ## Design Guardrails
 
 - Use Docker Compose for local orchestration.
-- Use named volumes for persistence, including `thor_data`.
+- Use named volumes for persistence, including per-node `thor_data` volumes.
 - Use Promtail for log shipping to Loki.
 - Use a trace sidecar to emit OTLP traces (VeChain node does not emit traces).
 - Auto-provision Grafana data sources and at least one starter dashboard.
+- Keep API public via `nginx` only; keep VeChain P2P ports internal.
+- Use separate named volumes per node (`thor_data_a`, `thor_data_b`) for safe horizontal scaling.

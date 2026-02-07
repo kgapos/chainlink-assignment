@@ -87,19 +87,18 @@ services:
       - observability
 
 # Applications to generate telemetry
-  node:
+  node-a:
     image: vechain/thor:v2.4.1
-    container_name: node
+    container_name: node-a
     restart: unless-stopped
     user: "1000:1000"
     volumes:
-      - thor_data:/home/thor/.org.vechain.thor
-    ports:
-      - "80:80"
-      - "2112:2112"
-      - "2113:2113"
-      - "11235:11235"
-      - "11235:11235/udp"
+      - thor_data_a:/home/thor/.org.vechain.thor
+    expose:
+      - "80"
+      - "2112"
+      - "2113"
+      - "11235"
     entrypoint: thor
     command:
       - --network=testnet
@@ -118,18 +117,76 @@ services:
       - --disable-pruner
       - --logdb-additional-indexes
     depends_on:
-      node-init:
+      node-a-init:
+        condition: service_completed_successfully
+    networks:
+      - observability
+      
+  node-a-init:
+    image: alpine:3.19
+    container_name: node-a-init
+    command: ["sh", "-c", "chown -R 1000:1000 /home/thor/.org.vechain.thor"]
+    user: "0:0"
+    volumes:
+      - thor_data_a:/home/thor/.org.vechain.thor
+    networks:
+      - observability
+
+  node-b:
+    image: vechain/thor:v2.4.1
+    container_name: node-b
+    restart: unless-stopped
+    user: "1000:1000"
+    volumes:
+      - thor_data_b:/home/thor/.org.vechain.thor
+    expose:
+      - "80"
+      - "2112"
+      - "2113"
+      - "11235"
+    entrypoint: thor
+    command:
+      - --network=testnet
+      - --max-peers=300
+      - --enable-metrics
+      - --metrics-addr=0.0.0.0:2112
+      - --enable-admin
+      - --admin-addr=0.0.0.0:2113
+      - --txpool-limit-per-account=10000
+      - --api-addr=0.0.0.0:80
+      - --api-cors=*
+      - --api-enable-deprecated
+      - --api-allowed-tracers=call
+      - --api-log-5xx-errors
+      - --api-slow-queries-threshold=5000
+      - --disable-pruner
+      - --logdb-additional-indexes
+    depends_on:
+      node-b-init:
         condition: service_completed_successfully
     networks:
       - observability
 
-  node-init:
+  node-b-init:
     image: alpine:3.19
-    container_name: node-init
+    container_name: node-b-init
     command: ["sh", "-c", "chown -R 1000:1000 /home/thor/.org.vechain.thor"]
     user: "0:0"
     volumes:
-      - thor_data:/home/thor/.org.vechain.thor
+      - thor_data_b:/home/thor/.org.vechain.thor
+    networks:
+      - observability
+
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - node-a
+      - node-b
     networks:
       - observability
 
@@ -148,12 +205,13 @@ services:
       - observability
 
 volumes:
-  thor_data:
+  thor_data_a:
+  thor_data_b:
   prometheus_data:
   loki_data:
   tempo_data:
   grafana_data:
-  influxdb_data:
+
 networks:
   observability:
     driver: bridge
