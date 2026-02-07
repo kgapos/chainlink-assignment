@@ -116,7 +116,7 @@ Grafana -> Loki: query logs (LogQL)
 ## Local Docker Compose Stack
 
 Recommended versions (example images):
-- OpenTelemetry Collector: `otel/opentelemetry-collector-contrib`
+- OpenTelemetry Collector: `otel/opentelemetry-collector`
 - Prometheus: `prom/prometheus`
 - Loki: `grafana/loki`
 - Tempo: `grafana/tempo`

@@ -1,6 +1,6 @@
 services:
   otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+    image: otel/opentelemetry-collector:latest
     container_name: otel-collector
     command: ["--config=/etc/otel-collector.yaml"]
     volumes:
@@ -199,6 +199,7 @@ services:
       - --otlp-insecure
       - --service=trace-sidecar
       - --rate=5
+      - --duration=inf
     depends_on:
       - otel-collector
     networks:
