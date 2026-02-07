@@ -6,8 +6,10 @@
     "words": [
         "Chainlink",
         "dedup",
+        "healthcheck",
         "ingester",
         "inmemory",
+        "Itʼs",
         "kvstore",
         "lifecycler",
         "logdb",
@@ -15,7 +17,11 @@
         "rgba",
         "timepicker",
         "txpool",
-        "vechain"
+        "vechain",
+        "Weʼre",
+        "wonʼt",
+        "youʼll",
+        "Youʼre"
     ],
     "ignoreWords": [
         "boltdb",
