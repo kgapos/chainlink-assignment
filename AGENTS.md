@@ -14,7 +14,7 @@ Core components:
 - **Visualization**: Grafana.
 
 Signal ingress:
-- **OTLP gRPC/HTTP** from a sidecar trace generator to the OTel Collector gateway.
+- **OTLP gRPC/HTTP** from the Envoy edge proxy to the OTel Collector gateway.
 - **Prometheus pull** for metrics scraping (VeChain node exposes `/metrics` when enabled).
 
 Persistence:
@@ -37,7 +37,7 @@ Persistence:
 3. Loki stores logs locally with volume-backed chunks and index.
 
 ### Traces Pipeline
-1. A sidecar trace generator emits OTLP traces to the OTel Collector.
+1. Envoy edge proxy emits OTLP traces for API requests to the OTel Collector.
 2. OTel Collector receives, batches, and forwards to Tempo.
 3. Tempo stores traces in volume-backed blocks with WAL.
 
@@ -46,14 +46,21 @@ Persistence:
 ### Context Diagram
 ```
                 +---------------------------+
-                |        VeChain Node       |
-                | (metrics/logs) + Sidecar  |
-                |       (traces)            |
+                |        Envoy Proxy        |
+                |  (public API + traces)    |
                 +-------------+-------------+
                               |
-                 OTLP gRPC/HTTP|   /metrics
-                              |       |
-                              v       v
+            proxied requests  |    OTLP gRPC/HTTP
+                              |           |
+                              v           v
+                +---------------------------+
+                | VeChain Nodes (A/B)       |
+                |   (metrics + logs)        |
+                +-------------+-------------+
+                              |
+                           /metrics
+                              |
+                              v
                    +-----------------------+
                    | OpenTelemetry         |
                    | Collector (gateway)   |
@@ -89,7 +96,7 @@ Persistence:
 
 ### Sequence Diagram (OTLP Traces)
 ```
-Trace Sidecar -> OTel Collector: OTLP trace spans
+Envoy -> OTel Collector: OTLP trace spans
 OTel Collector -> OTel Collector: batch/attributes sampling
 OTel Collector -> Tempo: OTLP export
 Tempo -> Docker volume: write WAL + blocks
@@ -123,7 +130,7 @@ Recommended versions (example images):
 - Grafana: `grafana/grafana`
 
 Services (Compose):
-- `nginx`, `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `promtail`, `node-a`, `node-b`, `trace-sidecar`
+- `envoy`, `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `promtail`, `node-a`, `node-b`
 
 ## Storage & Persistence
 
@@ -173,8 +180,8 @@ Suggested alerts:
 
 Example demo app:
 - `node-a` and `node-b` services configured to expose `/metrics` and emit logs.
-- `nginx` service load-balances public API traffic to `node-a` and `node-b`.
-- `trace-sidecar` service configured to emit OTLP traces.
+- `envoy` service load-balances public API traffic to `node-a` and `node-b`.
+- `envoy` emits OTLP traces for API requests to the OTel Collector.
 
 Example configuration layout:
 - `docker-compose.yaml`
@@ -202,6 +209,8 @@ Example configuration layout:
 - `docker compose up -d` to ensure services start.
 - `docker compose ps` to confirm healthy status.
 - `docker logs -n 20 node-a` and `docker logs -n 20 node-b` to confirm nodes are running and syncing.
+- `curl http://localhost:80/blocks/best` to generate edge API traffic.
+- `curl "http://localhost:3200/api/search?q={resource.service.name = \"edge-proxy\"}"` to confirm traces are stored.
 
 ## Notes
 
@@ -216,7 +225,7 @@ or exporters in the OTel Collector.
 - Use Docker Compose for local orchestration.
 - Use named volumes for persistence, including per-node `thor_data` volumes.
 - Use Promtail for log shipping to Loki.
-- Use a trace sidecar to emit OTLP traces (VeChain node does not emit traces).
+- Use Envoy edge proxy to emit OTLP traces for node API traffic.
 - Auto-provision Grafana data sources and at least one starter dashboard.
-- Keep API public via `nginx` only; keep VeChain P2P ports internal.
+- Keep API public via edge proxy only; keep VeChain P2P ports internal.
 - Use separate named volumes per node (`thor_data_a`, `thor_data_b`) for safe horizontal scaling.

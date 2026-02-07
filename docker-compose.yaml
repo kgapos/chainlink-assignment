@@ -55,7 +55,8 @@ services:
       - observability
 
   tempo:
-    image: grafana/tempo:2.4.1
+    image: grafana/tempo:2.6.1
+    user: "0:0"
     container_name: tempo
     command: -config.file=/etc/tempo/tempo.yaml
     volumes:
@@ -177,30 +178,19 @@ services:
     networks:
       - observability
 
-  nginx:
-    image: nginx:1.27-alpine
-    container_name: nginx
+  envoy:
+    image: envoyproxy/envoy:v1.30.7
+    container_name: envoy
     ports:
       - "80:80"
+    expose:
+      - "9901"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./envoy.yaml:/etc/envoy/envoy.yaml:ro
+    command: ["envoy", "-c", "/etc/envoy/envoy.yaml", "-l", "info"]
     depends_on:
       - node-a
       - node-b
-    networks:
-      - observability
-
-  trace-sidecar:
-    image: ghcr.io/open-telemetry/opentelemetry-collector-contrib/telemetrygen:latest
-    container_name: trace-sidecar
-    command:
-      - traces
-      - --otlp-endpoint=otel-collector:4317
-      - --otlp-insecure
-      - --service=trace-sidecar
-      - --rate=5
-      - --duration=inf
-    depends_on:
       - otel-collector
     networks:
       - observability
