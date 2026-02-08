@@ -134,8 +134,7 @@ Optional overrides:
 ### Validate telemetry flow
 
 1. Prometheus targets: http://localhost:9090/targets
-   - Expect `vechain-node` targets (`node-a:2112`, `node-b:2112`), `envoy`, and `prometheus` to be
-     up.
+   - Expect `otel-collector-metrics` and `prometheus` targets to be up.
 2. Grafana dashboard:
    - Open the "Observability Overview" dashboard for node logs and up metrics.
 3. Traces:

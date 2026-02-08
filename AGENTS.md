@@ -33,9 +33,9 @@ Persistence:
 ### Metrics Pipeline
 
 1. VeChain node exposes `/metrics` (Prometheus format).
-2. Prometheus scrapes targets defined in static configs (Compose network DNS).
-3. Prometheus stores metrics in local volume-backed TSDB.
-4. OTel Collector can also accept OTLP metrics and remote_write to Prometheus (optional).
+2. OTel Collector scrapes node and platform metrics with the Prometheus receiver.
+3. OTel Collector exposes aggregated metrics on a Prometheus exporter endpoint.
+4. Prometheus scrapes the OTel Collector exporter and stores TSDB data in a local volume.
 
 ### Logs Pipeline
 
