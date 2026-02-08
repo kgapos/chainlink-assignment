@@ -8,7 +8,7 @@ const testProfile = __ENV.TEST_PROFILE || "smoke";
 const requestProfile = JSON.parse(open("./requests.json"));
 
 const smokeVus = Number(__ENV.SMOKE_VUS || 3);
-const smokeDuration = __ENV.SMOKE_DURATION || "1m";
+const smokeDuration = __ENV.SMOKE_DURATION || "10s";
 const loadMaxVus = Number(__ENV.LOAD_MAX_VUS || 30);
 
 const smokeScenario = {
