@@ -2,7 +2,9 @@
 
 ## Goal
 
-Design and document a complete local observability pipeline that ingests and stores metrics, logs, and traces from a VeChain node. The system runs entirely on Docker Compose, receives OTLP telemetry, and persists data via local Docker volumes.
+Design and document a complete local observability pipeline that ingests and stores metrics, logs,
+and traces from a VeChain node. The system runs entirely on Docker Compose, receives OTLP telemetry,
+and persists data via local Docker volumes.
 
 ## Architecture Overview
 

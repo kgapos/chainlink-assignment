@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 2,
-  "id": 3,
+  "id": 4,
   "links": [],
   "panels": [
     {
@@ -124,7 +124,7 @@
       "targets": [
         {
           "editorMode": "builder",
-          "expr": "rate(thor_metrics_block_processed_count_total{success=\"true\", type=\"received\"}[10m])",
+          "expr": "rate(thor_metrics_block_processed_count_total{success=\"true\", type=\"received\"}[3m])",
           "legendFormat": "{{server_address}}",
           "range": true,
           "refId": "A"
@@ -282,6 +282,7 @@
           },
           "fieldMinMax": true,
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -376,6 +377,7 @@
             }
           },
           "mappings": [],
+          "noValue": "0",
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -724,5 +726,5 @@
   "timezone": "",
   "title": "Observability overview",
   "uid": "5157ff4c-70fb-4b84-b0d5-21b6b1c36864",
-  "version": 5
+  "version": 1
 }
