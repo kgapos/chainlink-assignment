@@ -1,3 +1,4 @@
+name: otel
 services:
   otel-collector:
     image: otel/opentelemetry-collector:latest
@@ -88,6 +89,21 @@ services:
       - observability
 
   # Telemetry generating applications:
+  node-volume-init:
+    image: alpine:3.19
+    container_name: node-volume-init
+    user: "0:0"
+    environment:
+      - USE_SNAPSHOT=${USE_SNAPSHOT:-true} # Use a snapshot to reduce the node's initial sync time from days to minutes. Expects a directory with the snapshot files configured in SNAPSHOT_PATH.
+    command: ["/bin/sh", "/scripts/copy-snapshots.sh"]
+    volumes:
+      - ./scripts/copy-snapshots.sh:/scripts/copy-snapshots.sh:ro
+      - node_data_a:/node_data_a
+      - node_data_b:/node_data_b
+      - ${SNAPSHOT_PATH:-/storage/prd-node-snapshots/node-hosting/testnet}:/snapshot:ro # Replace with your own snapshot path
+    networks:
+      - observability
+
   node-a:
     image: vechain/thor:v2.4.1
     container_name: node-a
@@ -118,18 +134,8 @@ services:
       - --disable-pruner
       - --logdb-additional-indexes
     depends_on:
-      node-a-init:
+      node-volume-init:
         condition: service_completed_successfully
-    networks:
-      - observability
-
-  node-a-init:
-    image: alpine:3.19
-    container_name: node-a-init
-    command: ["sh", "-c", "chown -R 1000:1000 /home/thor/.org.vechain.thor"]
-    user: "0:0"
-    volumes:
-      - node_data_a:/home/thor/.org.vechain.thor
     networks:
       - observability
 
@@ -163,18 +169,8 @@ services:
       - --disable-pruner
       - --logdb-additional-indexes
     depends_on:
-      node-b-init:
+      node-volume-init:
         condition: service_completed_successfully
-    networks:
-      - observability
-
-  node-b-init:
-    image: alpine:3.19
-    container_name: node-b-init
-    command: ["sh", "-c", "chown -R 1000:1000 /home/thor/.org.vechain.thor"]
-    user: "0:0"
-    volumes:
-      - node_data_b:/home/thor/.org.vechain.thor
     networks:
       - observability
 

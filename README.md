@@ -84,13 +84,21 @@ docker compose up -d
 docker compose ps
 ```
 
-If either VeChain node reports permission errors on its data volume, run:
+Before first startup (or when restoring snapshot data), run the init container:
 
 ```bash
-docker compose run --rm node-a-init
-docker compose run --rm node-b-init
-docker compose up -d
+docker compose run --rm node-volume-init
 ```
+
+Behavior:
+- `USE_SNAPSHOT` controls copy behavior (default: `true`).
+- If `USE_SNAPSHOT=true` and snapshot mount has files, snapshots are copied into empty node volumes.
+- If the snapshot path does not exist (or is empty), no copy is attempted and empty volumes still get ownership `1000:1000`.
+- If a target volume already contains files, copy is skipped and no ownership changes are made, to avoid touching active node data.
+
+Optional overrides:
+- `USE_SNAPSHOT=false docker compose run --rm node-volume-init`
+- `SNAPSHOT_PATH=/storage/prd-node-snapshots/node-hosting/testnet docker compose run --rm node-volume-init`
 
 ### Access endpoints
 
