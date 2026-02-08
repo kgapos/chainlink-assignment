@@ -111,5 +111,5 @@ export function smoke() {
 
 export function load() {
   executeRequest();
-  sleep(Math.random() * 0.7 + 0.1);
+  sleep(Math.random() * 0.5 + 0.5); // A little bit of jitter, between 0.5 and 1.0 seconds
 }
