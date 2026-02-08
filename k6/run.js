@@ -15,6 +15,7 @@ const smokeScenario = {
   executor: "constant-vus",
   vus: "10",
   duration: "10s",
+  startTime: "5s", // start 5 seconds after the test starts
   exec: "smoke",
   tags: { scenario: "smoke" },
 };
