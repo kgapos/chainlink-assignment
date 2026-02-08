@@ -1,4 +1,8 @@
 #!/bin/sh
+
+# Copies snapshots into the node data directories if the USE_SNAPSHOT environment variable is true.
+# Changes the ownership of the node data directories to the THOR_UID and THOR_GID.
+
 set -eu
 
 SNAPSHOT_DIR="${SNAPSHOT_DIR:-/snapshot}"
