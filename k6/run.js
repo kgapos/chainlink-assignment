@@ -5,7 +5,7 @@ http.setResponseCallback(http.expectedStatuses({ min: 200, max: 499 }));
 
 const baseUrl = __ENV.BASE_URL || "http://envoy:80";
 const testProfile = __ENV.TEST_PROFILE || "smoke";
-const requestProfile = JSON.parse(open("./requests.json"));
+const requestProfile = JSON.parse(open("./requests.ndjson"));
 
 const maxVUs = Number(__ENV.MAX_VUS || 1000);
 const stageDuration = __ENV.STAGE_DURATION || "30s";

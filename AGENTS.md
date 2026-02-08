@@ -208,7 +208,7 @@ Example configuration layout:
 
 - `compose.yaml`
 - `k6/run.js`
-- `k6/requests.json`
+- `k6/requests.ndjson`
 - `otel-collector.yaml`
 - `prometheus.yaml`
 - `loki.yaml`
@@ -253,3 +253,4 @@ or exporters in the OTel Collector.
 - Auto-provision Grafana data sources and at least one starter dashboard.
 - Keep API public via edge proxy only; keep VeChain P2P ports internal.
 - Use separate named volumes per node (`node_data_a`, `node_data_b`) for safe horizontal scaling.
+- Format edited files with Prettier (`esbenp.prettier-vscode`), consistent with `.vscode/settings.json`.

@@ -1,0 +1,3 @@
+cspell.json
+k6/requests.ndjson
+grafana/dashboards/*.json

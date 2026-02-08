@@ -32,13 +32,13 @@ receivers:
     operators:
       - type: regex_parser
         parse_from: attributes["log.file.path"]
-        regex: '^.*/(?P<container_id>[a-f0-9]{64})/[a-f0-9]{64}-json.log$'
+        regex: "^.*/(?P<container_id>[a-f0-9]{64})/[a-f0-9]{64}-json.log$"
       - type: json_parser
         parse_from: body
         timestamp:
           parse_from: attributes.time
           layout_type: gotime
-          layout: '2006-01-02T15:04:05.999999999Z07:00'
+          layout: "2006-01-02T15:04:05.999999999Z07:00"
       - type: move
         from: attributes.log
         to: body
