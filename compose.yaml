@@ -124,6 +124,7 @@ services:
       - --metrics-addr=0.0.0.0:2112
       - --enable-admin
       - --admin-addr=0.0.0.0:2113
+      - --enable-api-logs
       - --txpool-limit-per-account=10000
       - --api-addr=0.0.0.0:80
       - --api-cors=*
@@ -159,6 +160,7 @@ services:
       - --metrics-addr=0.0.0.0:2112
       - --enable-admin
       - --admin-addr=0.0.0.0:2113
+      - --enable-api-logs
       - --txpool-limit-per-account=10000
       - --api-addr=0.0.0.0:80
       - --api-cors=*
