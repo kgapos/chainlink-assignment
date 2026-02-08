@@ -11,7 +11,7 @@ receivers:
         - job_name: vechain-node
           scrape_interval: 15s
           metrics_path: /metrics
-          static_configs:
+          static_configs: # TODO: replace with docker_sd_config for dynamic service discovery
             - targets: ["node-a:2112", "node-b:2112"]
         - job_name: tempo
           scrape_interval: 15s
