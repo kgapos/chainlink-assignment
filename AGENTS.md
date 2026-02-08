@@ -207,7 +207,7 @@ Example demo app:
 Example configuration layout:
 
 - `compose.yaml`
-- `k6/load.js`
+- `k6/run.js`
 - `k6/requests.json`
 - `otel-collector.yaml`
 - `prometheus.yaml`

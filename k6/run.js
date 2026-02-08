@@ -7,50 +7,61 @@ const baseUrl = __ENV.BASE_URL || "http://envoy:80";
 const testProfile = __ENV.TEST_PROFILE || "smoke";
 const requestProfile = JSON.parse(open("./requests.json"));
 
-const smokeVus = Number(__ENV.SMOKE_VUS || 3);
-const smokeDuration = __ENV.SMOKE_DURATION || "10s";
-const loadMaxVus = Number(__ENV.LOAD_MAX_VUS || 30);
+const maxVUs = Number(__ENV.MAX_VUS || 1000);
+const stageDuration = __ENV.STAGE_DURATION || "30s";
 
+// Smoke scenario: run a constant number of VUs for a short duration
 const smokeScenario = {
   executor: "constant-vus",
-  vus: smokeVus,
-  duration: smokeDuration,
+  vus: "10",
+  duration: "10s",
   exec: "smoke",
-  tags: { scenario: "smoke" }
+  tags: { scenario: "smoke" },
 };
 
+// Load scenario: ramp up to a maximum number of VUs over a period of time
 const loadScenario = {
   executor: "ramping-vus",
   startVUs: 0,
   stages: [
-    { duration: "2m", target: Math.max(1, Math.floor(loadMaxVus / 3)) },
-    { duration: "3m", target: loadMaxVus },
-    { duration: "2m", target: loadMaxVus },
-    { duration: "1m", target: 0 }
+    {
+      duration: stageDuration,
+      target: Math.max(1, Math.floor(maxVUs / 10)), // 10% of maxVUs
+    },
+    {
+      duration: stageDuration,
+      target: Math.max(1, Math.floor(maxVUs / 4)), // 25% of maxVUs
+    },
+    { duration: stageDuration, target: maxVUs }, // 100% of maxVUs
+    { duration: stageDuration, target: 0 },
   ],
-  gracefulRampDown: "30s",
+  gracefulRampDown: stageDuration,
   exec: "load",
-  tags: { scenario: "load" }
+  tags: { scenario: "load" },
 };
 
 export const options = {
   discardResponseBodies: true,
   thresholds: {
     http_req_failed: ["rate<0.02"],
-    http_req_duration: ["p(95)<1500"]
+    http_req_duration: ["p(95)<1500"],
   },
-  scenarios: testProfile === "load" ? { load: loadScenario } : { smoke: smokeScenario }
+  scenarios:
+    testProfile === "load" ? { load: loadScenario } : { smoke: smokeScenario },
 };
 
 const endpoints = requestProfile.endpoints || [];
-const totalWeight = endpoints.reduce((acc, endpoint) => acc + (endpoint.weight || 0), 0);
+const totalWeight = endpoints.reduce(
+  (acc, endpoint) => acc + (endpoint.weight || 0),
+  0,
+);
 
 function pickEndpoint() {
   if (!endpoints.length || totalWeight <= 0) {
     return {
       method: "GET",
       template: "/blocks/best",
-      samples: [{ uri: "/blocks/best", body: "" }]
+      samples: [{ uri: "/blocks/best", body: "" }],
     };
   }
 
@@ -81,11 +92,11 @@ function executeRequest() {
   if (endpoint.method === "POST") {
     res = http.post(url, sample.body || "{}", {
       headers: { "Content-Type": "application/json" },
-      tags: { endpoint: endpoint.template, method: "POST" }
+      tags: { endpoint: endpoint.template, method: "POST" },
     });
   } else {
     res = http.get(url, {
-      tags: { endpoint: endpoint.template, method: "GET" }
+      tags: { endpoint: endpoint.template, method: "GET" },
     });
   }
 

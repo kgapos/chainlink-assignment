@@ -194,13 +194,12 @@ services:
   k6:
     image: grafana/k6:0.49.0
     container_name: k6
-    profiles: ["loadtest"]
     environment:
       - BASE_URL=http://envoy:80
       - TEST_PROFILE=smoke
     volumes:
       - ./k6:/scripts:ro
-    command: ["run", "/scripts/load.js"]
+    command: ["run", "/scripts/run.js"]
     depends_on:
       - envoy
     networks:
