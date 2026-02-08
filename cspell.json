@@ -1,6 +1,9 @@
 {
   "version": "0.2",
-  "ignorePaths": [],
+  "ignorePaths": [
+    "k6/requests.ndjson",
+    "grafana/dashboards/*.json"
+  ],
   "dictionaryDefinitions": [],
   "dictionaries": [],
   "words": [
