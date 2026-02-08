@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 2,
+  "id": 1,
   "links": [],
   "panels": [
     {
@@ -105,8 +105,10 @@
       "pluginVersion": "12.3.2",
       "targets": [
         {
-          "expr": "sum(rate(envoy_http_downstream_rq_xx[1m]))",
+          "editorMode": "builder",
+          "expr": "sum(rate(envoy_cluster_external_upstream_rq_xx_total[1m]))",
           "legendFormat": "rps",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -197,8 +199,10 @@
       "pluginVersion": "12.3.2",
       "targets": [
         {
-          "expr": "sum by (envoy_response_code_class) (rate(envoy_http_downstream_rq_xx[5m]))",
+          "editorMode": "code",
+          "expr": "sum by (envoy_response_code_class) (rate(envoy_http_downstream_rq_xx_total[5m]))",
           "legendFormat": "{{envoy_response_code_class}}xx",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -474,8 +478,10 @@
       "pluginVersion": "12.3.2",
       "targets": [
         {
+          "editorMode": "builder",
           "expr": "sum(envoy_http_downstream_cx_active)",
           "legendFormat": "active",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -658,8 +664,10 @@
       "pluginVersion": "12.3.2",
       "targets": [
         {
-          "expr": "sum(rate(envoy_http_downstream_rq_xx{envoy_response_code_class=\"5\"}[5m]))",
+          "editorMode": "builder",
+          "expr": "sum(rate(envoy_http_downstream_rq_xx_total{envoy_response_code_class=\"5\"}[5m]))",
           "legendFormat": "5xx rps",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -764,7 +772,6 @@
   "schemaVersion": 42,
   "tags": [
     "envoy",
-    "edge",
     "observability"
   ],
   "templating": {
@@ -776,7 +783,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Envoy Edge Load Balancer",
+  "title": "Load balancer metrics",
   "uid": "envoy-edge-lb",
-  "version": 2
+  "version": 3
 }
