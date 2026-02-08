@@ -17,6 +17,10 @@ services:
       - loki
     networks:
       - observability
+    logging:
+      driver: json-file
+      options:
+        labels: com.docker.compose.service
 
   prometheus:
     image: prom/prometheus:latest
@@ -31,6 +35,10 @@ services:
       - "9090:9090"
     networks:
       - observability
+    logging:
+      driver: json-file
+      options:
+        labels: com.docker.compose.service
 
   loki:
     image: grafana/loki:3.6.0
@@ -44,6 +52,10 @@ services:
       - "3100:3100"
     networks:
       - observability
+    logging:
+      driver: json-file
+      options:
+        labels: com.docker.compose.service
 
   tempo:
     image: grafana/tempo:2.6.1
@@ -57,6 +69,10 @@ services:
       - "3200:3200"
     networks:
       - observability
+    logging:
+      driver: json-file
+      options:
+        labels: com.docker.compose.service
 
   grafana:
     image: grafana/grafana:latest
@@ -77,6 +93,10 @@ services:
       - tempo
     networks:
       - observability
+    logging:
+      driver: json-file
+      options:
+        labels: com.docker.compose.service
 
   # Telemetry generating applications:
   node-volume-init:
@@ -129,6 +149,10 @@ services:
         condition: service_completed_successfully
     networks:
       - observability
+    logging:
+      driver: json-file
+      options:
+        labels: com.docker.compose.service
 
   node-b:
     image: vechain/thor:v2.4.1
@@ -165,6 +189,10 @@ services:
         condition: service_completed_successfully
     networks:
       - observability
+    logging:
+      driver: json-file
+      options:
+        labels: com.docker.compose.service
 
   envoy:
     image: envoyproxy/envoy:v1.30.7
@@ -182,6 +210,10 @@ services:
       - otel-collector
     networks:
       - observability
+    logging:
+      driver: json-file
+      options:
+        labels: com.docker.compose.service
 
   k6:
     image: grafana/k6:0.49.0
@@ -196,6 +228,10 @@ services:
       - envoy
     networks:
       - observability
+    logging:
+      driver: json-file
+      options:
+        labels: com.docker.compose.service
 
 volumes:
   prometheus_data:

@@ -71,6 +71,8 @@ processors:
       - context: log
         statements:
           - set(resource.attributes["service.name"], "docker")
+          - set(log.attributes["container_name"], log.attributes["attrs"]["com.docker.compose.service"]) where IsMap(log.attributes["attrs"]) and IsString(log.attributes["attrs"]["com.docker.compose.service"])
+          - set(resource.attributes["container.name"], log.attributes["container_name"]) where IsString(log.attributes["container_name"])
           - set(resource.attributes["service.instance.id"], log.attributes["container_id"]) where IsString(log.attributes["container_id"])
 
 exporters:

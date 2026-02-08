@@ -238,7 +238,7 @@
       "pluginVersion": "12.3.2",
       "targets": [
         {
-          "expr": "{service_name=\"docker\"} |= \"pkg=node\"",
+          "expr": "{container_name=~\"node-.*\"}",
           "refId": "A"
         }
       ],
@@ -451,5 +451,5 @@
   "timezone": "",
   "title": "Observability Overview",
   "uid": "5157ff4c-70fb-4b84-b0d5-21b6b1c36864",
-  "version": 4
+  "version": 6
 }
