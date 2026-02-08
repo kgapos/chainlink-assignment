@@ -12,7 +12,7 @@ Core components:
 
 - **OpenTelemetry Collector** (gateway): OTLP ingestion, processing, routing.
 - **Metrics**: Prometheus (scrape + TSDB storage).
-- **Logs**: Loki (log store) + Promtail (agent) or OTel Collector log receiver.
+- **Logs**: Loki (log store) via OTel Collector log receiver.
 - **Traces**: Tempo (trace store).
 - **Visualization**: Grafana.
 
@@ -33,14 +33,14 @@ Persistence:
 ### Metrics Pipeline
 
 1. VeChain node exposes `/metrics` (Prometheus format).
-2. Prometheus scrapes targets defined in static configs (Compose network DNS).
-3. Prometheus stores metrics in local volume-backed TSDB.
-4. OTel Collector can also accept OTLP metrics and remote_write to Prometheus (optional).
+2. OTel Collector scrapes node and platform metrics with the Prometheus receiver.
+3. OTel Collector exposes aggregated metrics on a Prometheus exporter endpoint.
+4. Prometheus scrapes the OTel Collector exporter and stores TSDB data in a local volume.
 
 ### Logs Pipeline
 
 1. VeChain node emits stdout/stderr to container logs.
-2. Promtail tails container logs and forwards to Loki.
+2. OTel Collector tails container logs and forwards to Loki.
 3. Loki stores logs locally with volume-backed chunks and index.
 
 ### Traces Pipeline
@@ -88,7 +88,7 @@ Persistence:
 
                     +----------------+
                     |     Loki       |
-  Promtail -------->|    (logs)      |
+ OTel Collector --->|    (logs)      |
                     +-------+--------+
                             |
                             v
@@ -126,8 +126,8 @@ Grafana -> Prometheus: query metrics (PromQL)
 
 ```
 VeChain Node -> Container runtime: stdout/stderr
-Promtail -> Container runtime: tail logs
-Promtail -> Loki: push batches
+OTel Collector -> Container runtime: tail logs
+OTel Collector -> Loki: push batches
 Loki -> Docker volume: store chunks + index
 Grafana -> Loki: query logs (LogQL)
 ```
@@ -144,7 +144,7 @@ Recommended versions (example images):
 
 Services (Compose):
 
-- `envoy`, `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `promtail`, `node-a`, `node-b`, `k6` (profile: `loadtest`)
+- `envoy`, `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `node-a`, `node-b`, `k6` (profile: `loadtest`)
 
 ## Storage & Persistence
 
@@ -214,7 +214,6 @@ Example configuration layout:
 - `loki.yaml`
 - `tempo.yaml`
 - `grafana.yaml`
-- `promtail.yaml`
 - `grafana/datasources.yaml`
 - `grafana/dashboards.yaml`
 - `grafana/dashboards/overview.json`
@@ -249,7 +248,7 @@ or exporters in the OTel Collector.
 
 - Use Docker Compose for local orchestration.
 - Use named volumes for persistence, including per-node `node_data` volumes.
-- Use Promtail for log shipping to Loki.
+- Use OTel Collector for log shipping to Loki.
 - Use Envoy edge proxy to emit OTLP traces for node API traffic.
 - Auto-provision Grafana data sources and at least one starter dashboard.
 - Keep API public via edge proxy only; keep VeChain P2P ports internal.
