@@ -1,9 +1,16 @@
 #!/bin/sh
-
-# Copies snapshots into the node data directories if the USE_SNAPSHOT environment variable is true.
-# Changes the ownership of the node data directories to the THOR_UID and THOR_GID.
-
 set -eu
+
+cat << 'EOF'
+Purpose: initializes the node data directories with a snapshot if available.
+
+What it does:
+- Copies snapshots into the node data directories if the USE_SNAPSHOT variable is true.
+- Changes the ownership of the node data directories to the THOR_UID and THOR_GID.
+
+Used by:
+- docker compose service: node-volume-init
+EOF
 
 SNAPSHOT_DIR="${SNAPSHOT_DIR:-/snapshot}"
 NODE_A_DIR="${NODE_A_DIR:-/node_data_a}"
@@ -40,4 +47,4 @@ copy_into_dir() {
 copy_into_dir "$NODE_A_DIR"
 copy_into_dir "$NODE_B_DIR"
 
-echo "Done."
+echo "Node data directories initialized."
