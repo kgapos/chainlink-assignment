@@ -1,16 +1,20 @@
 name: otel
 services:
   otel-collector:
-    image: otel/opentelemetry-collector:latest
+    image: otel/opentelemetry-collector-contrib:0.142.0
     container_name: otel-collector
+    user: "0:0"
     command: ["--config=/etc/otel-collector.yaml"]
     volumes:
       - ./otel-collector.yaml:/etc/otel-collector.yaml:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - otelcol_data:/var/lib/otelcol
     ports:
       - "4317:4317"
       - "4318:4318"
     depends_on:
       - tempo
+      - loki
     networks:
       - observability
 
@@ -29,29 +33,15 @@ services:
       - observability
 
   loki:
-    image: grafana/loki:2.9.4
+    image: grafana/loki:3.6.0
     container_name: loki
+    user: "0:0"
     command: -config.file=/etc/loki/loki.yaml
     volumes:
       - ./loki.yaml:/etc/loki/loki.yaml:ro
       - loki_data:/loki
     ports:
       - "3100:3100"
-    networks:
-      - observability
-
-  promtail:
-    image: grafana/promtail:3.0.0
-    container_name: promtail
-    command: -config.file=/etc/promtail/promtail.yaml
-    environment:
-      - DOCKER_API_VERSION=1.44
-    volumes:
-      - ./promtail.yaml:/etc/promtail/promtail.yaml:ro
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
-      - /var/run/docker.sock:/var/run/docker.sock
-    depends_on:
-      - loki
     networks:
       - observability
 
@@ -212,6 +202,7 @@ volumes:
   loki_data:
   tempo_data:
   grafana_data:
+  otelcol_data:
   node_data_a:
   node_data_b:
 

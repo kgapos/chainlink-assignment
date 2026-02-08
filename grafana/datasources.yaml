@@ -23,4 +23,6 @@ datasources:
       httpMethod: GET
       tracesToLogs:
         datasourceUid: loki
-        tags: ["container", "job"]
+        mappedTags:
+          - key: service.name
+            value: service_name

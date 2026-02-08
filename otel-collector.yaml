@@ -23,27 +23,79 @@ receivers:
           metrics_path: /stats/prometheus
           static_configs:
             - targets: ["envoy:9901"]
+  filelog/docker:
+    include:
+      - /var/lib/docker/containers/*/*-json.log
+    include_file_path: true
+    start_at: beginning
+    storage: file_storage
+    operators:
+      - type: regex_parser
+        parse_from: attributes["log.file.path"]
+        regex: '^.*/(?P<container_id>[a-f0-9]{64})/[a-f0-9]{64}-json.log$'
+      - type: json_parser
+        parse_from: body
+        timestamp:
+          parse_from: attributes.time
+          layout_type: gotime
+          layout: '2006-01-02T15:04:05.999999999Z07:00'
+      - type: move
+        from: attributes.log
+        to: body
+      - type: move
+        from: attributes.stream
+        to: attributes.log_stream
+      - type: remove
+        field: attributes.time
+
+extensions:
+  file_storage:
+    directory: /var/lib/otelcol/file_storage
+    create_directory: true
 
 processors:
   memory_limiter:
     check_interval: 1s
-    limit_mib: 400
+    limit_mib: 512
     spike_limit_mib: 100
   batch:
     timeout: 5s
     send_batch_size: 1024
+  batch/logs:
+    timeout: 2s
+    send_batch_size: 512
+    send_batch_max_size: 1024
+  transform/logs:
+    error_mode: ignore
+    log_statements:
+      - context: log
+        statements:
+          - set(resource.attributes["service.name"], "docker")
+          - set(resource.attributes["service.instance.id"], log.attributes["container_id"]) where IsString(log.attributes["container_id"])
 
 exporters:
   otlp/tempo:
     endpoint: tempo:4317
     tls:
       insecure: true
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+    sending_queue:
+      enabled: true
+      num_consumers: 8
+      queue_size: 20000
+    retry_on_failure:
+      enabled: true
+      initial_interval: 1s
+      max_interval: 10s
+      max_elapsed_time: 300s
   prometheus:
     endpoint: 0.0.0.0:9464
     resource_to_telemetry_conversion:
       enabled: true
 
 service:
+  extensions: [file_storage]
   pipelines:
     traces:
       receivers: [otlp]
@@ -53,3 +105,7 @@ service:
       receivers: [prometheus, otlp]
       processors: [memory_limiter, batch]
       exporters: [prometheus]
+    logs:
+      receivers: [otlp, filelog/docker]
+      processors: [memory_limiter, transform/logs, batch/logs]
+      exporters: [otlphttp/loki]

@@ -27,6 +27,9 @@
     "ignoreWords": [
         "boltdb",
         "envoyproxy",
+        "gotime",
+        "otelcol",
+        "otlphttp",
         "prometheusremotewrite",
         "telemetrygen"
     ],
