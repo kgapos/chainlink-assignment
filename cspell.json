@@ -12,6 +12,7 @@
         "Itʼs",
         "kvstore",
         "lifecycler",
+        "loadtest",
         "logdb",
         "Promtail",
         "rgba",
@@ -25,6 +26,7 @@
     ],
     "ignoreWords": [
         "boltdb",
+        "envoyproxy",
         "prometheusremotewrite",
         "telemetrygen"
     ],

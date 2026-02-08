@@ -1,12 +1,15 @@
 # Designing an End-to-End Observability Pipeline (Local)
 
 ## Goal
+
 Design and document a complete local observability pipeline that ingests and stores metrics, logs, and traces from a VeChain node. The system runs entirely on Docker Compose, receives OTLP telemetry, and persists data via local Docker volumes.
 
 ## Architecture Overview
+
 Local container orchestration: Docker Compose with named volumes for persistence.
 
 Core components:
+
 - **OpenTelemetry Collector** (gateway): OTLP ingestion, processing, routing.
 - **Metrics**: Prometheus (scrape + TSDB storage).
 - **Logs**: Loki (log store) + Promtail (agent) or OTel Collector log receiver.
@@ -14,10 +17,12 @@ Core components:
 - **Visualization**: Grafana.
 
 Signal ingress:
+
 - **OTLP gRPC/HTTP** from the Envoy edge proxy to the OTel Collector gateway.
 - **Prometheus pull** for metrics scraping (VeChain node exposes `/metrics` when enabled).
 
 Persistence:
+
 - Prometheus TSDB -> Docker volume
 - Loki chunks + index -> Docker volume
 - Tempo blocks + WAL -> Docker volume
@@ -26,17 +31,20 @@ Persistence:
 ## Logical Pipelines
 
 ### Metrics Pipeline
+
 1. VeChain node exposes `/metrics` (Prometheus format).
 2. Prometheus scrapes targets defined in static configs (Compose network DNS).
 3. Prometheus stores metrics in local volume-backed TSDB.
 4. OTel Collector can also accept OTLP metrics and remote_write to Prometheus (optional).
 
 ### Logs Pipeline
+
 1. VeChain node emits stdout/stderr to container logs.
 2. Promtail tails container logs and forwards to Loki.
 3. Loki stores logs locally with volume-backed chunks and index.
 
 ### Traces Pipeline
+
 1. Envoy edge proxy emits OTLP traces for API requests to the OTel Collector.
 2. OTel Collector receives, batches, and forwards to Tempo.
 3. Tempo stores traces in volume-backed blocks with WAL.
@@ -44,6 +52,7 @@ Persistence:
 ## Dataflow Diagrams
 
 ### Context Diagram
+
 ```
                 +---------------------------+
                 |        Envoy Proxy        |
@@ -72,7 +81,7 @@ Persistence:
         +-------------+                    +-------------+
         |   Tempo     |                    | Prometheus  |
         | (traces)    |                    | (metrics)   |
-        +------+------+                    +------+------+  
+        +------+------+                    +------+------+
                |                                 |
                v                                 v
         Docker volume storage             Docker volume TSDB
@@ -95,6 +104,7 @@ Persistence:
 ```
 
 ### Sequence Diagram (OTLP Traces)
+
 ```
 Envoy -> OTel Collector: OTLP trace spans
 OTel Collector -> OTel Collector: batch/attributes sampling
@@ -104,6 +114,7 @@ Grafana -> Tempo: query trace by trace_id
 ```
 
 ### Sequence Diagram (Prometheus Metrics)
+
 ```
 Prometheus -> VeChain Node: GET /metrics
 VeChain Node -> Prometheus: Prometheus text exposition
@@ -112,6 +123,7 @@ Grafana -> Prometheus: query metrics (PromQL)
 ```
 
 ### Sequence Diagram (Logs)
+
 ```
 VeChain Node -> Container runtime: stdout/stderr
 Promtail -> Container runtime: tail logs
@@ -123,6 +135,7 @@ Grafana -> Loki: query logs (LogQL)
 ## Local Docker Compose Stack
 
 Recommended versions (example images):
+
 - OpenTelemetry Collector: `otel/opentelemetry-collector`
 - Prometheus: `prom/prometheus`
 - Loki: `grafana/loki`
@@ -130,42 +143,49 @@ Recommended versions (example images):
 - Grafana: `grafana/grafana`
 
 Services (Compose):
-- `envoy`, `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `promtail`, `node-a`, `node-b`
+
+- `envoy`, `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `promtail`, `node-a`, `node-b`, `k6` (profile: `loadtest`)
 
 ## Storage & Persistence
 
 Use named Docker volumes for Prometheus, Loki, Tempo, Grafana, and per-node VeChain data.
 
 Persistence plan:
+
 - Prometheus: TSDB data
 - Loki: chunks + index
 - Tempo: WAL + blocks
 - Grafana: dashboards and sqlite
-- VeChain node A: chain data (`thor_data_a`)
-- VeChain node B: chain data (`thor_data_b`)
+- VeChain node A: chain data (`node_data_a`)
+- VeChain node B: chain data (`node_data_b`)
 
 ## OTLP Ingestion
 
 OTel Collector gateway with receivers:
+
 - `otlp` (gRPC + HTTP)
 
 Exporters:
+
 - `otlp` to Tempo
 - `prometheusremotewrite` (optional; if using OTLP metrics)
 - `loki` (optional; if using OTel logs)
 
 Processors:
+
 - `batch`, `memory_limiter`, `attributes` (for standard metadata)
 
 ## Basic Operability Signals
 
 Minimum internal observability:
+
 - **Health checks**: readiness/liveness probes for all services.
 - **Dashboards**: Grafana dashboards for Prometheus, Loki, Tempo, OTel Collector.
 - **Alerts**: Prometheus rules for high error rates, scrape failures, and component restarts.
 - **Service logs**: query Loki for component logs.
 
 Suggested alerts:
+
 - Prometheus `up == 0` for core services.
 - OTel Collector queue length + dropped spans.
 - Loki write errors, Tempo ingest errors.
@@ -179,12 +199,16 @@ Suggested alerts:
 ## Optional Proof-of-Concept (Bonus)
 
 Example demo app:
+
 - `node-a` and `node-b` services configured to expose `/metrics` and emit logs.
 - `envoy` service load-balances public API traffic to `node-a` and `node-b`.
 - `envoy` emits OTLP traces for API requests to the OTel Collector.
 
 Example configuration layout:
-- `docker-compose.yaml`
+
+- `compose.yaml`
+- `k6/load.js`
+- `k6/requests.json`
 - `otel-collector.yaml`
 - `prometheus.yaml`
 - `loki.yaml`
@@ -211,6 +235,7 @@ Example configuration layout:
 - `docker logs -n 20 node-a` and `docker logs -n 20 node-b` to confirm nodes are running and syncing.
 - `curl http://localhost:80/blocks/best` to generate edge API traffic.
 - `curl "http://localhost:3200/api/search?q={resource.service.name = \"edge-proxy\"}"` to confirm traces are stored.
+- `docker compose --profile loadtest run --rm -e TEST_PROFILE=smoke k6` to validate synthetic load generation.
 
 ## Notes
 
@@ -223,9 +248,9 @@ or exporters in the OTel Collector.
 ## Design Guardrails
 
 - Use Docker Compose for local orchestration.
-- Use named volumes for persistence, including per-node `thor_data` volumes.
+- Use named volumes for persistence, including per-node `node_data` volumes.
 - Use Promtail for log shipping to Loki.
 - Use Envoy edge proxy to emit OTLP traces for node API traffic.
 - Auto-provision Grafana data sources and at least one starter dashboard.
 - Keep API public via edge proxy only; keep VeChain P2P ports internal.
-- Use separate named volumes per node (`thor_data_a`, `thor_data_b`) for safe horizontal scaling.
+- Use separate named volumes per node (`node_data_a`, `node_data_b`) for safe horizontal scaling.
