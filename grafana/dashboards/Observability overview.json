@@ -17,7 +17,7 @@
   },
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "graphTooltip": 0,
+  "graphTooltip": 2,
   "id": 3,
   "links": [],
   "panels": [
@@ -33,100 +33,6 @@
       "panels": [],
       "title": "Metrics",
       "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "prometheus"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "barWidthFactor": 0.6,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "insertNulls": false,
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "showValues": false,
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": 0
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 0,
-        "y": 1
-      },
-      "id": 3,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "12.3.2",
-      "targets": [
-        {
-          "editorMode": "code",
-          "expr": "thor_metrics_block_processed_count_total{success=\"true\", type=\"received\"}",
-          "legendFormat": "{{server_address}}",
-          "range": true,
-          "refId": "A"
-        }
-      ],
-      "title": "Total blocks processed",
-      "type": "timeseries"
     },
     {
       "datasource": {
@@ -195,9 +101,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 6,
+        "h": 7,
+        "w": 4,
+        "x": 0,
         "y": 1
       },
       "id": 9,
@@ -291,9 +197,9 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 6,
-        "w": 9,
-        "x": 12,
+        "h": 10,
+        "w": 13,
+        "x": 4,
         "y": 1
       },
       "id": 10,
@@ -336,8 +242,197 @@
       "fieldConfig": {
         "defaults": {
           "color": {
+            "fixedColor": "red",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 0.01,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "fieldMinMax": true,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 7,
+        "x": 17,
+        "y": 1
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max"
+          ],
+          "displayMode": "list",
+          "placement": "right",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "(\n  sum(rate(thor_metrics_api_request_count_total{code=~\"5..\"}[1m]))\n/\n  sum(rate(thor_metrics_api_request_count_total[1m]))\n) * 100",
+          "legendFormat": "5XX",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "5XX rate (%)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "yellow",
+            "mode": "fixed"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "showValues": false,
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "yellow",
+                "value": 0
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 7,
+        "x": 17,
+        "y": 6
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "(\n  sum(rate(thor_metrics_api_request_count_total{code=~\"4..\"}[1m]))\n/\n  sum(rate(thor_metrics_api_request_count_total[1m]))\n) * 100",
+          "legendFormat": "4XX",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "4XX rate (%)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
             "mode": "thresholds"
           },
+          "fieldMinMax": false,
           "mappings": [],
           "thresholds": {
             "mode": "absolute",
@@ -347,21 +442,68 @@
                 "value": 0
               },
               {
-                "color": "green",
+                "color": "red",
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "short"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "500"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "400"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "yellow",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "200"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 6,
-        "w": 3,
-        "x": 21,
-        "y": 1
+        "h": 3,
+        "w": 4,
+        "x": 0,
+        "y": 8
       },
-      "id": 11,
+      "id": 14,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -369,9 +511,7 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
+          "calcs": [],
           "fields": "",
           "values": false
         },
@@ -383,13 +523,15 @@
       "targets": [
         {
           "editorMode": "builder",
-          "expr": "sum(thor_metrics_api_request_count_total)",
+          "exemplar": false,
+          "expr": "sum by(code) (thor_metrics_api_request_count_total)",
+          "instant": true,
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
-      "title": "Total API request count",
+      "title": "Total request count by response code",
       "type": "stat"
     },
     {
@@ -398,7 +540,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 7
+        "y": 11
       },
       "id": 7,
       "panels": [],
@@ -470,7 +612,7 @@
         "h": 6,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 12
       },
       "id": 4,
       "options": {
@@ -518,7 +660,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 14
+        "y": 18
       },
       "id": 6,
       "panels": [],
@@ -538,7 +680,7 @@
         "h": 6,
         "w": 24,
         "x": 0,
-        "y": 15
+        "y": 19
       },
       "id": 2,
       "options": {
@@ -568,19 +710,19 @@
     }
   ],
   "preload": false,
-  "refresh": "5s",
+  "refresh": "10s",
   "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Observability overview",
   "uid": "5157ff4c-70fb-4b84-b0d5-21b6b1c36864",
-  "version": 4
+  "version": 5
 }

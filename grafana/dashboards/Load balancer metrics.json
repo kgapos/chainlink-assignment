@@ -23,6 +23,85 @@
   "panels": [
     {
       "datasource": {
+        "uid": "prometheus"
+      },
+      "description": "Cumulative counters for the observation buckets ()\n\n**Type:** *counter*\n\n",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "scaleDistribution": {
+              "type": "linear"
+            }
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9,
+      "maxDataPoints": 500,
+      "options": {
+        "calculate": false,
+        "cellGap": 1,
+        "cellValues": {},
+        "color": {
+          "exponent": 0.5,
+          "fill": "dark-orange",
+          "mode": "scheme",
+          "reverse": false,
+          "scale": "exponential",
+          "scheme": "Spectral",
+          "steps": 32
+        },
+        "exemplars": {
+          "color": "rgba(255,0,255,0.7)"
+        },
+        "filterValues": {
+          "le": 1e-9
+        },
+        "legend": {
+          "show": true
+        },
+        "rowsFrame": {
+          "layout": "auto"
+        },
+        "selectionMode": "x",
+        "showValue": "auto",
+        "tooltip": {
+          "mode": "single",
+          "showColorScale": false,
+          "yHistogram": false
+        },
+        "yAxis": {
+          "axisPlacement": "left",
+          "reverse": false,
+          "unit": "ms"
+        }
+      },
+      "pluginVersion": "12.3.2",
+      "targets": [
+        {
+          "expr": "sum by (le) (rate(envoy_http_downstream_cx_length_ms_bucket{ }[$__rate_interval]))",
+          "format": "heatmap",
+          "fromExploreMetrics": false,
+          "refId": "envoy_http_downstream_cx_length_ms_bucket-heatmap"
+        }
+      ],
+      "title": "Downstream connection distribution",
+      "type": "heatmap"
+    },
+    {
+      "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
@@ -86,7 +165,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 12
       },
       "id": 1,
       "options": {
@@ -180,7 +259,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 12
       },
       "id": 2,
       "options": {
@@ -275,7 +354,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 8
+        "y": 20
       },
       "id": 3,
       "options": {
@@ -367,7 +446,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 8
+        "y": 20
       },
       "id": 4,
       "options": {
@@ -459,7 +538,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 16
+        "y": 28
       },
       "id": 5,
       "options": {
@@ -553,7 +632,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 16
+        "y": 28
       },
       "id": 6,
       "options": {
@@ -645,7 +724,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 24
+        "y": 36
       },
       "id": 7,
       "options": {
@@ -664,7 +743,7 @@
       "pluginVersion": "12.3.2",
       "targets": [
         {
-          "editorMode": "builder",
+          "editorMode": "code",
           "expr": "sum(rate(envoy_http_downstream_rq_xx_total{envoy_response_code_class=\"5\"}[5m]))",
           "legendFormat": "5xx rps",
           "range": true,
@@ -739,7 +818,7 @@
         "h": 8,
         "w": 12,
         "x": 12,
-        "y": 24
+        "y": 36
       },
       "id": 8,
       "options": {
@@ -785,5 +864,5 @@
   "timezone": "browser",
   "title": "Load balancer metrics",
   "uid": "envoy-edge-lb",
-  "version": 3
+  "version": 4
 }
