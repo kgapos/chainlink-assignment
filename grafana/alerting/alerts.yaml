@@ -1,0 +1,264 @@
+apiVersion: 1
+groups:
+    - orgId: 1
+      name: API error rate
+      folder: Alerts
+      interval: 1m
+      rules:
+        - uid: cfcng8h6539j4b
+          title: High 5XX rate
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 1800
+                to: 0
+              datasourceUid: prometheus
+              model:
+                datasource:
+                    type: prometheus
+                    uid: prometheus
+                editorMode: code
+                expr: |-
+                    (
+                      sum(rate(thor_metrics_api_request_count_total{code=~"5.."}[1m]))
+                    /
+                      sum(rate(thor_metrics_api_request_count_total[1m]))
+                    ) * 100
+                instant: true
+                interval: ""
+                intervalMs: 15000
+                legendFormat: 5XX
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.1
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: 5157ff4c-70fb-4b84-b0d5-21b6b1c36864
+          panelId: 13
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            __dashboardUid__: 5157ff4c-70fb-4b84-b0d5-21b6b1c36864
+            __panelId__: "13"
+            summary: API 5XX error rate exceeds 0.1%
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: bfcngabob9on4a
+          title: High 4XX rate
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 1800
+                to: 0
+              datasourceUid: prometheus
+              model:
+                datasource:
+                    type: prometheus
+                    uid: prometheus
+                editorMode: code
+                expr: |-
+                    (
+                      sum(rate(thor_metrics_api_request_count_total{code=~"4.."}[1m]))
+                    /
+                      sum(rate(thor_metrics_api_request_count_total[1m]))
+                    ) * 100
+                instant: true
+                interval: ""
+                intervalMs: 15000
+                legendFormat: 4XX
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 10
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: 5157ff4c-70fb-4b84-b0d5-21b6b1c36864
+          panelId: 12
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            __dashboardUid__: 5157ff4c-70fb-4b84-b0d5-21b6b1c36864
+            __panelId__: "12"
+            summary: API 4XX error rate exceeds 10%
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+    - orgId: 1
+      name: node-sync-status
+      folder: Alerts
+      interval: 1m
+      rules:
+        - uid: cfcnbotsc21hcc
+          title: Abnormally high block processing rate
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 1800
+                to: 0
+              datasourceUid: prometheus
+              model:
+                datasource:
+                    type: prometheus
+                    uid: prometheus
+                editorMode: builder
+                expr: rate(thor_metrics_block_processed_count_total{success="true", type="received"}[10m])
+                instant: true
+                interval: ""
+                intervalMs: 15000
+                legendFormat: '{{server_address}}'
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.11
+                        type: gt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: 5157ff4c-70fb-4b84-b0d5-21b6b1c36864
+          panelId: 9
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            __dashboardUid__: 5157ff4c-70fb-4b84-b0d5-21b6b1c36864
+            __panelId__: "9"
+            summary: The block processing rate exceeds 0.11 which means that the node is trying to catch up with the network.
+          labels:
+            lifecycle: sync
+            module: node
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
+        - uid: ffcnbzvlnwidcb
+          title: Abnormally low block processing rate
+          condition: C
+          data:
+            - refId: A
+              relativeTimeRange:
+                from: 1800
+                to: 0
+              datasourceUid: prometheus
+              model:
+                datasource:
+                    type: prometheus
+                    uid: prometheus
+                editorMode: builder
+                expr: rate(thor_metrics_block_processed_count_total{success="true", type="received"}[10m])
+                instant: true
+                interval: ""
+                intervalMs: 15000
+                legendFormat: '{{server_address}}'
+                maxDataPoints: 43200
+                range: false
+                refId: A
+            - refId: C
+              datasourceUid: __expr__
+              model:
+                conditions:
+                    - evaluator:
+                        params:
+                            - 0.09
+                        type: lt
+                      operator:
+                        type: and
+                      query:
+                        params:
+                            - C
+                      reducer:
+                        params: []
+                        type: last
+                      type: query
+                datasource:
+                    type: __expr__
+                    uid: __expr__
+                expression: A
+                intervalMs: 1000
+                maxDataPoints: 43200
+                refId: C
+                type: threshold
+          dashboardUid: 5157ff4c-70fb-4b84-b0d5-21b6b1c36864
+          panelId: 9
+          noDataState: NoData
+          execErrState: Error
+          for: 1m
+          annotations:
+            __dashboardUid__: 5157ff4c-70fb-4b84-b0d5-21b6b1c36864
+            __panelId__: "9"
+            summary: The block processing rate is less than 0.09 which means that the node is going off sync with the blockchain.
+          labels:
+            lifecycle: sync
+            module: node
+          isPaused: false
+          notification_settings:
+            receiver: grafana-default-email
