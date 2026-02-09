@@ -1,0 +1,99 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/144.0.0.0 Safari/537.36" version="29.3.8">
+  <diagram id="traces-seq" name="Traces Sequence">
+    <mxGraphModel dx="1426" dy="783" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="c" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" value="Client" vertex="1">
+          <mxGeometry height="50" width="120" x="10" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="o" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" value="OTel Collector" vertex="1">
+          <mxGeometry height="50" width="160" x="410" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="t" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Tempo" vertex="1">
+          <mxGeometry height="50" width="120" x="660" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="e1" edge="1" parent="1" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" value="API request">
+          <mxGeometry relative="1" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points" />
+            <mxPoint x="70" y="80" as="sourcePoint" />
+            <mxPoint x="270" y="80" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e2" edge="1" parent="1" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" value="OTLP spans">
+          <mxGeometry relative="1" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points" />
+            <mxPoint x="270" y="110" as="sourcePoint" />
+            <mxPoint x="490" y="110" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e4" edge="1" parent="1" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" value="OTLP trace export">
+          <mxGeometry relative="1" x="-0.0435" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points">
+              <mxPoint x="490" y="230" />
+            </Array>
+            <mxPoint x="490" y="230" as="sourcePoint" />
+            <mxPoint x="720" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="e5" edge="1" parent="1" style="endArrow=block;html=1;rounded=0;strokeWidth=2;" value="Trace query results">
+          <mxGeometry relative="1" x="-0.0526" y="10" as="geometry">
+            <mxPoint as="offset" />
+            <Array as="points" />
+            <mxPoint x="720" y="260" as="sourcePoint" />
+            <mxPoint x="910" y="260" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OrhmG7lxlQTtphlGZnYi-1" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" value="Grafana" vertex="1">
+          <mxGeometry height="50" width="120" x="850" y="10" as="geometry" />
+        </mxCell>
+        <mxCell id="OrhmG7lxlQTtphlGZnYi-2" edge="1" parent="1" style="endArrow=block;html=1;rounded=0;strokeWidth=2;curved=1;endFill=1;" value="memory limiter &amp;amp; batch">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="570" y="130" />
+              <mxPoint x="570" y="200" />
+            </Array>
+            <mxPoint x="490" y="130" as="sourcePoint" />
+            <mxPoint x="490" y="200" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OrhmG7lxlQTtphlGZnYi-3" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="69.5" y="270" as="sourcePoint" />
+            <mxPoint x="69.5" y="60" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OrhmG7lxlQTtphlGZnYi-4" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="269.5" y="270" as="sourcePoint" />
+            <mxPoint x="269.5" y="60" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OrhmG7lxlQTtphlGZnYi-5" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="489.5" y="270" as="sourcePoint" />
+            <mxPoint x="489.5" y="60" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OrhmG7lxlQTtphlGZnYi-6" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="719.5" y="270" as="sourcePoint" />
+            <mxPoint x="719.5" y="60" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OrhmG7lxlQTtphlGZnYi-7" edge="1" parent="1" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=2;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="909.5" y="270" as="sourcePoint" />
+            <mxPoint x="909.5" y="60" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="OrhmG7lxlQTtphlGZnYi-8" parent="1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" value="Envoy" vertex="1">
+          <mxGeometry height="50" width="120" x="210" y="10" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
