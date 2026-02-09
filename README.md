@@ -16,7 +16,6 @@
 For a deep dive into the design and architecture, please refer to the
 [Design document](docs/design-document.md). There you will find:
 
-- Executive summary.
 - Problem statement and project prompt.
 - Assumptions and constraints.
 - System architecture and dataflow diagrams.

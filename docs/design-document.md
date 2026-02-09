@@ -1,55 +1,50 @@
 # Local End-to-End Observability Pipeline
 
 - [Local End-to-End Observability Pipeline](#local-end-to-end-observability-pipeline)
-  - [1. Executive Summary](#1-executive-summary)
-  - [2. Problem Statement](#2-problem-statement)
-    - [2.1 Introduction](#21-introduction)
-    - [2.2 Project Prompt](#22-project-prompt)
-  - [3. Assumptions and Constraints](#3-assumptions-and-constraints)
-    - [3.1 Assumptions](#31-assumptions)
-    - [3.2 Constraints](#32-constraints)
-  - [4. System Architecture](#4-system-architecture)
-    - [4.1 High-Level Architecture](#41-high-level-architecture)
-    - [4.2 Dataflow Diagrams](#42-dataflow-diagrams)
-      - [4.2.1 Context Diagram](#421-context-diagram)
-      - [4.2.2 Metrics Sequence Diagram](#422-metrics-sequence-diagram)
-      - [4.2.3 Logs Sequence Diagram](#423-logs-sequence-diagram)
-      - [4.2.4 Traces Sequence Diagram](#424-traces-sequence-diagram)
-    - [4.3 Network and Security Exposure Model](#43-network-and-security-exposure-model)
-  - [5. Persistence and Storage Design](#5-persistence-and-storage-design)
-    - [5.1 Named Volumes and Data Paths](#51-named-volumes-and-data-paths)
-    - [5.2 Retention and Data Lifecycle](#52-retention-and-data-lifecycle)
-  - [6. Observability](#6-observability)
-    - [6.1 Dashboards and Data Source Provisioning](#61-dashboards-and-data-source-provisioning)
-    - [6.2 Alerting Strategy](#62-alerting-strategy)
-  - [7. Deploy, Test and Validate](#7-deploy-test-and-validate)
-    - [7.1 Deploy](#71-deploy)
-      - [7.1.1 Prerequisites](#711-prerequisites)
-      - [7.1.2 (Optional) Download and use a public snapshot](#712-optional-download-and-use-a-public-snapshot)
-      - [7.1.3 Deploy](#713-deploy)
-    - [7.2 Test with k6](#72-test-with-k6)
-      - [7.2.1 Smoke Test](#721-smoke-test)
-      - [7.2.2 Soak Test](#722-soak-test)
-      - [7.2.3 Saturation Test](#723-saturation-test)
-  - [8 Troubleshooting](#8-troubleshooting)
-    - [8.1 Container/runtime view](#81-containerruntime-view)
-    - [8.2 Node health](#82-node-health)
-    - [8.3 API accessibility](#83-api-accessibility)
-    - [8.4 Trace readiness](#84-trace-readiness)
-    - [8.5 Prometheus target status page](#85-prometheus-target-status-page)
-    - [8.6 Inspect OTel collector logs for dropped telemetry or exporter retry pressure](#86-inspect-otel-collector-logs-for-dropped-telemetry-or-exporter-retry-pressure)
-  - [9. Design trade-offs and Gaps](#9-design-trade-offs-and-gaps)
-    - [9.1 Design Trade-offs](#91-design-trade-offs)
-    - [9.2 Known Gaps in Current PoC](#92-known-gaps-in-current-poc)
-  - [10. Operational Commands (Runbook Quick Reference)](#10-operational-commands-runbook-quick-reference)
+  - [1. Problem Statement](#1-problem-statement)
+    - [1.1 Introduction](#11-introduction)
+    - [1.2 Project Prompt](#12-project-prompt)
+  - [2. Assumptions and Constraints](#2-assumptions-and-constraints)
+    - [2.1 Assumptions](#21-assumptions)
+    - [2.2 Constraints](#22-constraints)
+  - [3. System Architecture](#3-system-architecture)
+    - [3.1 High-Level Architecture](#31-high-level-architecture)
+    - [3.2 Dataflow Diagrams](#32-dataflow-diagrams)
+      - [3.2.1 Context Diagram](#321-context-diagram)
+      - [3.2.2 Metrics Sequence Diagram](#322-metrics-sequence-diagram)
+      - [3.2.3 Logs Sequence Diagram](#323-logs-sequence-diagram)
+      - [3.2.4 Traces Sequence Diagram](#324-traces-sequence-diagram)
+    - [3.3 Network and Security Exposure Model](#33-network-and-security-exposure-model)
+  - [4. Persistence and Storage Design](#4-persistence-and-storage-design)
+    - [4.1 Named Volumes and Data Paths](#41-named-volumes-and-data-paths)
+    - [4.2 Retention and Data Lifecycle](#42-retention-and-data-lifecycle)
+  - [5. Observability](#5-observability)
+    - [5.1 Dashboards and Data Source Provisioning](#51-dashboards-and-data-source-provisioning)
+    - [5.2 Alerting Strategy](#52-alerting-strategy)
+  - [6. Deploy, Test and Validate](#6-deploy-test-and-validate)
+    - [6.1 Deploy](#61-deploy)
+      - [6.1.1 Prerequisites](#611-prerequisites)
+      - [6.1.2 (Optional) Download and use a public snapshot](#612-optional-download-and-use-a-public-snapshot)
+      - [6.1.3 Deploy](#613-deploy)
+    - [6.2 Test with k6](#62-test-with-k6)
+      - [6.2.1 Smoke Test](#621-smoke-test)
+      - [6.2.2 Soak Test](#622-soak-test)
+      - [6.2.3 Saturation Test](#623-saturation-test)
+  - [7. Troubleshooting](#7-troubleshooting)
+    - [7.1 Container/runtime view](#71-containerruntime-view)
+    - [7.2 Node health](#72-node-health)
+    - [7.3 API accessibility](#73-api-accessibility)
+    - [7.4 Trace readiness](#74-trace-readiness)
+    - [7.5 Prometheus target status page](#75-prometheus-target-status-page)
+    - [7.6 Inspect OTel collector logs for dropped telemetry or exporter retry pressure](#76-inspect-otel-collector-logs-for-dropped-telemetry-or-exporter-retry-pressure)
+  - [8. Design Trade-offs and Gaps](#8-design-trade-offs-and-gaps)
+    - [8.1 Design Trade-offs](#81-design-trade-offs)
+    - [8.2 Known Gaps in Current PoC](#82-known-gaps-in-current-poc)
+  - [9. Operational Commands (Runbook Quick Reference)](#9-operational-commands-runbook-quick-reference)
 
-## 1. Executive Summary
+## 1. Problem Statement
 
-TODO: write executive summary
-
-## 2. Problem Statement
-
-### 2.1 Introduction
+### 1.1 Introduction
 
 Site Reliability Engineer, Observability - Take Home Project
 
@@ -83,7 +78,7 @@ _Task notes:_
   which is more important than trying to find a perfect outcome.
 - Please do not share or publish this exercise brief or your final work publicly.
 
-### 2.2 Project Prompt
+### 1.2 Project Prompt
 
 **Topic:** Designing an End-to-End Observability Pipeline (Metrics, Logs, Traces)
 
@@ -110,7 +105,7 @@ are appropriate to ensure reliability, repeatability, and operability.
 **Optional (Bonus):** You’re welcome to include a basic proof-of-concept setup, with example
 configuration or sample apps to demonstrate your design. This is not required, but appreciated.
 
-## 3. Assumptions and Constraints
+## 2. Assumptions and Constraints
 
 The project prompt is explicit about building an observability stack that operates entirely on a
 local machine. This implies that it is primarily aimed towards development laptops/workstations,
@@ -119,7 +114,7 @@ demonstrate my ability to design a system with some level of production-grade co
 operability and reliability. I also think it is important to provide a working MVP even though it is
 considered an optional bonus, this is the fun part and where it all comes together!
 
-### 3.1 Assumptions
+### 2.1 Assumptions
 
 I need to design a system that:
 
@@ -146,7 +141,7 @@ my productivity. However, this is not a vibe coded assignment. I will review and
 change, ensure I understand everything and assume responsibility for the correctness of the code.
 This is aligned with how I work in the real world, especially in the context of non-production code.
 
-### 3.2 Constraints
+### 2.2 Constraints
 
 The primary constraint of the assignment, is the time constraint. Implementing the above
 requirements within an acceptable timeframe, calls for pragmatism over perfection.
@@ -173,9 +168,9 @@ requirements within an acceptable timeframe, calls for pragmatism over perfectio
    using `promtail` for log ingestion is simpler as it requires one less component. However, we need
    to prioritize OTEL Collector's control of the observability pipeline.
 
-## 4. System Architecture
+## 3. System Architecture
 
-### 4.1 High-Level Architecture
+### 3.1 High-Level Architecture
 
 VeChain nodes emit a rich set of metrics and logs, but not traces. We will use Envoy as a load
 balancer entrypoint and also as a basic trace emitter. Traces shine in large scale distributed
@@ -197,9 +192,9 @@ This implementation is an LGTM-style stack, adapted for a local PoC:
 `k6` acts as a deterministic workload generator so I can validate observability behavior under
 smoke, soak, and saturation profiles, not just idle-state service health.
 
-### 4.2 Dataflow Diagrams
+### 3.2 Dataflow Diagrams
 
-#### 4.2.1 Context Diagram
+#### 3.2.1 Context Diagram
 
 1. `envoy` is the load balancer and public API entrypoint on host port `80` forwards traffic to
    `node-a` and `node-b`. It also emits OTLP trace spans to `otel-collector`, since nodes do not
@@ -233,7 +228,7 @@ smoke, soak, and saturation profiles, not just idle-state service health.
 
 Editable source: [Context Diagram](./assets/context-diagram.drawio)
 
-#### 4.2.2 Metrics Sequence Diagram
+#### 3.2.2 Metrics Sequence Diagram
 
 Metrics follow a pull-first model centered around OTel Collector:
 
@@ -257,7 +252,7 @@ This architecture:
 - Reduces direct fan-out from Prometheus to many app targets.
 - Maintains portability because scrape logic is encapsulated in OTel configuration.
 
-#### 4.2.3 Logs Sequence Diagram
+#### 3.2.3 Logs Sequence Diagram
 
 Logs are collected in a lossless-first OTel path:
 
@@ -280,7 +275,7 @@ As aforementioned, a separate log shipper like `promtail` is simpler as it requi
 component, but having everything in one place is more portable and easier to understand and
 maintain.
 
-#### 4.2.4 Traces Sequence Diagram
+#### 3.2.4 Traces Sequence Diagram
 
 Traces start at the edge, on the Envoy load balancer and are routed to the OTel Collector:
 
@@ -297,7 +292,7 @@ tracing instrumentation inside VeChain nodes.
 
 Editable source: [Traces Sequence Diagram](./assets/traces-sequence-diagram.drawio)
 
-### 4.3 Network and Security Exposure Model
+### 3.3 Network and Security Exposure Model
 
 The stack uses one Docker bridge network, `observability`, as the private network for all services.
 
@@ -325,9 +320,9 @@ Security and isolation:
 - Some services run as root where required for file access (for example OTel file log tailing on
   host Docker log paths), with this trade-off explicitly accepted for local operation.
 
-## 5. Persistence and Storage Design
+## 4. Persistence and Storage Design
 
-### 5.1 Named Volumes and Data Paths
+### 4.1 Named Volumes and Data Paths
 
 Named Docker volumes preserve context across restarts:
 
@@ -340,7 +335,7 @@ Named Docker volumes preserve context across restarts:
 
 The separate node volumes are important for safe horizontal scaling and avoiding data collisions.
 
-### 5.2 Retention and Data Lifecycle
+### 4.2 Retention and Data Lifecycle
 
 Current local data lifecycle policy:
 
@@ -349,9 +344,9 @@ Current local data lifecycle policy:
 - Full reset is explicit and operator-driven via purge workflow (`scripts/purge-docker.sh`) or
   selective volume removal.
 
-## 6. Observability
+## 5. Observability
 
-### 6.1 Dashboards and Data Source Provisioning
+### 5.1 Dashboards and Data Source Provisioning
 
 Grafana is provisioned from source-controlled files:
 
@@ -365,7 +360,7 @@ Example dashboard: Observability Overview
 
 ![Grafana Dashboard - Observability Overview](./assets/grafana-observability-overview.png)
 
-### 6.2 Alerting Strategy
+### 5.2 Alerting Strategy
 
 Alert rules are treated as config artifacts:
 
@@ -391,11 +386,11 @@ dashboard panels:
 An Email Contact Point is wired to the alerts, but it needs to be
 [configured in Grafana](http://localhost:3000/alerting/notifications) to become functional.
 
-## 7. Deploy, Test and Validate
+## 6. Deploy, Test and Validate
 
-### 7.1 Deploy
+### 6.1 Deploy
 
-#### 7.1.1 Prerequisites
+#### 6.1.1 Prerequisites
 
 - Docker compose
 - Docker environment with at least:
@@ -403,7 +398,7 @@ An Email Contact Point is wired to the alerts, but it needs to be
   - 16 GB of RAM
   - 10 GB of disk space (up to 300 GB are needed, if you want to sync the testnet nodes fully)
 
-#### 7.1.2 (Optional) Download and use a public snapshot
+#### 6.1.2 (Optional) Download and use a public snapshot
 
 Synchronizing the testnet nodes over the P2P network takes days. Luckily, you do not need to fully
 sync the testnet nodes in order to run this project, but you should expect higher 4XX response codes
@@ -414,14 +409,14 @@ from [here](https://snapshots.vechainlabs.io/node-hosting-testnet.tar.zst) (~48 
 GB uncompressed). Extract into `/storage/prd-node-snapshots/node-hosting/testnet` or set
 `SNAPSHOT_PATH` to the correct path.
 
-#### 7.1.3 Deploy
+#### 6.1.3 Deploy
 
 To deploy the stack, run: `docker compose up -d`.
 
 This automatically runs the k6 smoke test, but you can also run it on demand with:
 `./scripts/run-smoke-test.sh`
 
-### 7.2 Test with k6
+### 6.2 Test with k6
 
 Test profiles are scripted for convenience and to help you validate the system under different load
 conditions: smoke, soak, and saturation.
@@ -429,7 +424,7 @@ conditions: smoke, soak, and saturation.
 The API requests are loaded from `k6/requests.ndjson` which is a collection of real requests sent to
 a testnet public node. That way they emulate a realistic endpoint invocation mix.
 
-#### 7.2.1 Smoke Test
+#### 6.2.1 Smoke Test
 
 Run: `scripts/run-smoke-test.sh`
 
@@ -447,7 +442,7 @@ Load characteristics:
 - Very low traffic (10 VUs)
 - Short duration (10 seconds)
 
-#### 7.2.2 Soak Test
+#### 6.2.2 Soak Test
 
 Run: `scripts/run-soak-test.sh`
 
@@ -468,7 +463,7 @@ Load characteristics:
 - At or slightly below expected production load (1000 VUs)
 - Long duration (1 hour, 4 \* 15 minute stages)
 
-#### 7.2.3 Saturation Test
+#### 6.2.3 Saturation Test
 
 Run: `scripts/run-saturation-test.sh`
 
@@ -487,9 +482,9 @@ Load characteristics:
 - Shorter duration (2 minutes, 4 \* 30s stages)
 - Stops once performance collapses
 
-## 8 Troubleshooting
+## 7. Troubleshooting
 
-### 8.1 Container/runtime view
+### 7.1 Container/runtime view
 
 Run `docker compose ps` to see the container/runtime view:
 
@@ -506,7 +501,7 @@ prometheus     prom/prometheus:latest   "/bin/prometheus --c…" prometheus     
 tempo          grafana/tempo:2.6.1      "/tempo -config.file…" tempo           0.0.0.0:3200->3200/tcp, [::]:3200->3200/tcp
 ```
 
-### 8.2 Node health
+### 7.2 Node health
 
 Run `docker logs -fn 5 node-a` and `node-b` to see the node health:
 
@@ -519,7 +514,7 @@ INFO [02-09|03:02:36.169] imported blocks (1) pkg=node txs=0 mgas=0.000 et="974.
 INFO [02-09|03:02:46.175] imported blocks (1) pkg=node txs=0 mgas=0.000 et="961.49µs|271.73µs" mgas/s=0.000 id="[#24056757…e75c692c]"
 ```
 
-### 8.3 API accessibility
+### 7.3 API accessibility
 
 Run `curl http://localhost:80/blocks/0` through Envoy to see the API accessibility:
 
@@ -547,17 +542,17 @@ $> curl http://localhost:80/blocks/0
 }
 ```
 
-### 8.4 Trace readiness
+### 7.4 Trace readiness
 
 Open http://localhost:3200/api/search?q={resource.service.name} to see the trace readiness:
 
-### 8.5 Prometheus target status page
+### 7.5 Prometheus target status page
 
 http://localhost:9090/targets
 
 Expect `otel-collector-metrics` and `prometheus` targets to be up.
 
-### 8.6 Inspect OTel collector logs for dropped telemetry or exporter retry pressure
+### 7.6 Inspect OTel collector logs for dropped telemetry or exporter retry pressure
 
 Run `docker logs -fn 5 otel-collector` to see the OTel collector logs for dropped telemetry or
 exporter retry pressure:
@@ -566,9 +561,9 @@ exporter retry pressure:
 $> docker logs -fn 5 otel-collector
 ```
 
-## 9. Design trade-offs and Gaps
+## 8. Design Trade-offs and Gaps
 
-### 9.1 Design Trade-offs
+### 8.1 Design Trade-offs
 
 - Docker Compose over Kubernetes: better local UX, lower fidelity to production orchestration.
 - OTel-centric pipelines: strong portability and central control, but larger collector blast radius.
@@ -576,7 +571,7 @@ $> docker logs -fn 5 otel-collector
 - Root-required file access for some services: operationally convenient, weaker isolation posture.
 - Traces are not instrumented in the VeChain nodes, low depth of insights.
 
-### 9.2 Known Gaps in Current PoC
+### 8.2 Known Gaps in Current PoC
 
 - No HA or failure-domain separation on single-host deployment.
 - No TLS/mTLS or robust secret management between components.
@@ -586,7 +581,7 @@ $> docker logs -fn 5 otel-collector
 - Only a small sample of visualizations are created in Grafana.
 - A pass over the codebase is needed, this is a quick and dirty proof of concept.
 
-## 10. Operational Commands (Runbook Quick Reference)
+## 9. Operational Commands (Runbook Quick Reference)
 
 ```bash
 # Bring up stack
