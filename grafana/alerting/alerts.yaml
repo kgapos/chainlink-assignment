@@ -23,7 +23,7 @@ groups:
                     (
                       sum(rate(thor_metrics_api_request_count_total{code=~"5.."}[1m]))
                     /
-                      sum(rate(thor_metrics_api_request_count_total[1m]))
+                      clamp_min(sum(rate(thor_metrics_api_request_count_total[1m])), 0.000001)
                     ) * 100
                 instant: true
                 interval: ""
@@ -87,7 +87,7 @@ groups:
                     (
                       sum(rate(thor_metrics_api_request_count_total{code=~"4.."}[1m]))
                     /
-                      sum(rate(thor_metrics_api_request_count_total[1m]))
+                      clamp_min(sum(rate(thor_metrics_api_request_count_total[1m])), 0.000001)
                     ) * 100
                 instant: true
                 interval: ""

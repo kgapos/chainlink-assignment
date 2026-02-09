@@ -15,7 +15,7 @@
       - [4.2.2 Metrics Sequence Diagram](#422-metrics-sequence-diagram)
       - [4.2.3 Logs Sequence Diagram](#423-logs-sequence-diagram)
       - [4.2.4 Traces Sequence Diagram](#424-traces-sequence-diagram)
-    - [4.4 Network and Security Exposure Model](#44-network-and-security-exposure-model)
+    - [4.3 Network and Security Exposure Model](#43-network-and-security-exposure-model)
   - [5. Persistence and Storage Design](#5-persistence-and-storage-design)
     - [5.1 Named Volumes and Data Paths](#51-named-volumes-and-data-paths)
     - [5.2 Retention and Data Lifecycle](#52-retention-and-data-lifecycle)
@@ -143,7 +143,7 @@ I need to design a system that:
 I also assume that the use of professional AI tools is allowed. This is a great opportunity for me
 to try out OpenCode and I will use it extensively in all phases of the project, in order to maximize
 my productivity. However, this is not a vibe coded assignment. I will review and approve every
-change, ensure I understand eveyrthing and assume responsibility for the correctness of the code.
+change, ensure I understand everything and assume responsibility for the correctness of the code.
 This is aligned with how I work in the real world, especially in the context of non-production code.
 
 ### 3.2 Constraints
@@ -177,7 +177,7 @@ requirements within an acceptable timeframe, calls for pragmatism over perfectio
 
 ### 4.1 High-Level Architecture
 
-VeChain nodes emmit a rich set of metrics and logs, but not traces. We will use Envoy as a load
+VeChain nodes emit a rich set of metrics and logs, but not traces. We will use Envoy as a load
 balancer entrypoint and also as a basic trace emitter. Traces shine in large scale distributed
 systems, where we need to track request paths across multiple services. These are hard to emulate in
 a small scale assignment like this.
@@ -265,7 +265,7 @@ Logs are collected in a lossless-first OTel path:
 2. OTel `filelog` receiver tails `/var/lib/docker/containers/*/*-json.log`.
 3. OTel transforms enrich records with metadata (for example `container_name` from compose labels).
 4. OTel `batch/logs` and retry queue absorb bursty node/API logging. This is important because
-   vechain nodes emit very high volumeof logs when API logging is enabled.
+   VeChain nodes emit a very high volume of logs when API logging is enabled.
 5. OTel exports logs to Loki OTLP ingest endpoint (`/otlp`).
 6. Grafana queries Loki using LogQL (`container_name=~"node-.*"` pattern for node-focused views).
 
@@ -297,7 +297,7 @@ tracing instrumentation inside VeChain nodes.
 
 Editable source: [Traces Sequence Diagram](./assets/traces-sequence-diagram.drawio)
 
-### 4.4 Network and Security Exposure Model
+### 4.3 Network and Security Exposure Model
 
 The stack uses one Docker bridge network, `observability`, as the private network for all services.
 
@@ -329,7 +329,7 @@ Security and isolation:
 
 ### 5.1 Named Volumes and Data Paths
 
-Named docker volumes preserve context across restarts:
+Named Docker volumes preserve context across restarts:
 
 - `prometheus_data`: Prometheus TSDB blocks and WAL.
 - `loki_data`: Loki chunks, index cache, compactor state.
@@ -607,7 +607,7 @@ docker compose ps
 ./scripts/download-grafana-alerts.sh
 
 # Verify edge API and trace search
-curl http://localhost:80/blocks/best # Get's the latest block of the testnet public node
+curl http://localhost:80/blocks/best # Gets the latest block of the testnet public node
 
 # Optional cleanup/reset (use with caution, purges all docker resources, not just this project's)
 ./scripts/purge-docker.sh

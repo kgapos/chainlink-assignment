@@ -138,7 +138,7 @@ Grafana -> Loki: query logs (LogQL)
 
 Recommended versions (example images):
 
-- OpenTelemetry Collector: `otel/opentelemetry-collector`
+- OpenTelemetry Collector: `otel/opentelemetry-collector-contrib`
 - Prometheus: `prom/prometheus`
 - Loki: `grafana/loki`
 - Tempo: `grafana/tempo`
@@ -146,7 +146,7 @@ Recommended versions (example images):
 
 Services (Compose):
 
-- `envoy`, `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `node-a`, `node-b`, `k6` (profile: `loadtest`)
+- `envoy`, `otel-collector`, `prometheus`, `loki`, `tempo`, `grafana`, `node-a`, `node-b`, `k6`
 
 ## Storage & Persistence
 
@@ -170,8 +170,8 @@ OTel Collector gateway with receivers:
 Exporters:
 
 - `otlp` to Tempo
-- `prometheusremotewrite` (optional; if using OTLP metrics)
-- `loki` (optional; if using OTel logs)
+- `otlphttp` to Loki
+- `prometheus` exporter endpoint for Prometheus scraping
 
 Processors:
 
@@ -215,10 +215,10 @@ Example configuration layout:
 - `prometheus.yaml`
 - `loki.yaml`
 - `tempo.yaml`
-- `grafana.yaml`
+- `grafana/alerting/alerts.yaml`
 - `grafana/datasources.yaml`
 - `grafana/dashboards.yaml`
-- `grafana/dashboards/overview.json`
+- `grafana/dashboards/Observability overview.json`
 
 ## Validation Checklist
 
@@ -233,18 +233,19 @@ Example configuration layout:
 - `docker compose pull` to validate image access.
 - `docker compose up -d` to ensure services start.
 - `docker compose ps` to confirm healthy status.
-- `docker logs -n 20 node-a` and `docker logs -n 20 node-b` to confirm nodes are running and syncing.
+- `docker logs -n 20 node-a` and `docker logs -n 20 node-b` to confirm nodes are running and
+  syncing.
 - `curl http://localhost:80/blocks/best` to generate edge API traffic.
-- `curl "http://localhost:3200/api/search?q={resource.service.name = \"edge-proxy\"}"` to confirm traces are stored.
-- `docker compose --profile loadtest run --rm -e TEST_PROFILE=smoke k6` to validate synthetic load generation.
+- `curl "http://localhost:3200/api/search?q={resource.service.name = \"edge-proxy\"}"` to confirm
+  traces are stored.
+- `docker compose run --rm -e TEST_PROFILE=smoke k6` to validate synthetic load generation.
 
 ## Notes
 
-This design keeps everything local while preserving real-world practices:
-OTLP ingestion at a centralized gateway, pull-based Prometheus scraping,
-and volume-backed storage for durable observability data. The stack can be
-expanded by adding scaling, retention policies, and additional processors
-or exporters in the OTel Collector.
+This design keeps everything local while preserving real-world practices: OTLP ingestion at a
+centralized gateway, pull-based Prometheus scraping, and volume-backed storage for durable
+observability data. The stack can be expanded by adding scaling, retention policies, and additional
+processors or exporters in the OTel Collector.
 
 ## Design Guardrails
 
@@ -255,4 +256,5 @@ or exporters in the OTel Collector.
 - Auto-provision Grafana data sources and at least one starter dashboard.
 - Keep API public via edge proxy only; keep VeChain P2P ports internal.
 - Use separate named volumes per node (`node_data_a`, `node_data_b`) for safe horizontal scaling.
-- Format edited files with Prettier (`esbenp.prettier-vscode`), consistent with `.vscode/settings.json`.
+- Format edited files with Prettier (`esbenp.prettier-vscode`), consistent with
+  `.vscode/settings.json`.

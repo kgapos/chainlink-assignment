@@ -16,16 +16,16 @@
 For a deep dive into the design and architecture, please refer to the
 [Design document](docs/design-document.md). There you will find:
 
+- Executive summary.
 - Problem statement and project prompt.
 - Assumptions and constraints.
-- System architecture.
-- Dataflow diagrams.
-- Telemetry pipelines.
-- Dataflow diagrams.
+- System architecture and dataflow diagrams.
 - Persistence and storage design.
-- Operability and reliability practices.
-- Validation and test plan.
-- Trade-offs, gaps, and next iterations.
+- Observability setup (dashboards and alerts).
+- Deploy, test, and validation workflow.
+- Troubleshooting runbook.
+- Design trade-offs and known gaps.
+- Operational commands quick reference.
 
 Context Diagram:
 

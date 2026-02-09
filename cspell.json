@@ -28,13 +28,24 @@
     "Youʼre"
   ],
   "ignoreWords": [
+    "bfcngabob",
     "boltdb",
+    "bursty",
+    "cfcnbotsc",
+    "cfcng",
     "envoyproxy",
+    "emmit",
+    "esbenp",
+    "eveyrthing",
+    "ffcnbzvlnwidcb",
     "gotime",
+    "mgas",
+    "opentel",
     "otelcol",
     "otlphttp",
     "prometheusremotewrite",
-    "telemetrygen"
+    "telemetrygen",
+    "volumeof"
   ],
   "import": []
 }
