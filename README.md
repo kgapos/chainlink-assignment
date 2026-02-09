@@ -1,129 +1,57 @@
 # Chainlink Labs Take Home Project
 
 - [Chainlink Labs Take Home Project](#chainlink-labs-take-home-project)
-  - [Project brief](#project-brief)
-    - [Introduction](#introduction)
-    - [Project Prompt](#project-prompt)
-  - [Implementation - Local Observability Stack with Docker Compose](#implementation---local-observability-stack-with-docker-compose)
-    - [Prerequisites](#prerequisites)
-    - [Start the stack](#start-the-stack)
-    - [Access endpoints](#access-endpoints)
-    - [Validate telemetry flow](#validate-telemetry-flow)
-    - [Generate synthetic traffic with k6](#generate-synthetic-traffic-with-k6)
-    - [Stop the stack](#stop-the-stack)
-    - [Purge all networks, containers, images and volumes (use with caution)](#purge-all-networks-containers-images-and-volumes-use-with-caution)
-    - [Notes](#notes)
+  - [Design document](#design-document)
+  - [Prerequisites](#prerequisites)
+  - [Optional: Download and use a public snapshot](#optional-download-and-use-a-public-snapshot)
+  - [Start the stack](#start-the-stack)
+  - [Access endpoints](#access-endpoints)
+  - [Generate synthetic traffic with k6](#generate-synthetic-traffic-with-k6)
+  - [Validate telemetry flow](#validate-telemetry-flow)
+  - [Stop and clean up](#stop-and-clean-up)
 
-## Project brief
+## Design document
 
-Site Reliability Engineer, Observability - Take Home Project
+For a deep dive into the design and architecture, please refer to the
+[Design document](docs/Design.md). There you will find:
 
-### Introduction
+- Problem statement and project prompt.
+- Assumptions and constraints.
+- System architecture.
+- Dataflow diagrams.
+- Telemetry pipelines.
+- Dataflow diagrams.
+- Persistence and storage design.
+- Operability and reliability practices.
+- Validation and test plan.
+- Trade-offs, gaps, and next iterations.
 
-Congratulations on making it to the next part of our hiring process at Chainlink Labs. This is our
-Take Home Project, youʼre near the end! We appreciate the time invested in the process with us, and
-we are looking forward to receiving your submission.
+## Prerequisites
 
-_During the exercise:_
+- Docker compose
+- Docker environment with at least:
+  - 8 vCPUs
+  - 16 GB of RAM
+  - 10 GB of disk space (up to 300 GB are needed, if you want to sync the testnet nodes fully)
 
-- If you have any questions, please reach out to your recruiter directly.
-- Typically, the project can be completed within 4-6 hours.
+## Optional: Download and use a public snapshot
 
-_Submitting the exercise:_
+Synchronizing the testnet nodes over the P2P network takes days. Luckily, you do not need to fully
+sync the testnet nodes in order to run this project, but you should expect higher 4XX response codes
+and unhealthy node signals until your nodes are fully synced.
 
-- At Chainlink Labs, we present and communicate through Google documents. Please deliver your
-  project in document/memo format unless otherwise asked.
-- Submit your project directly to your recruiter and coordinator within 7 days of receiving this
-  brief. Sharing as a PDF or .doc. Do not submit slides/decks.
+If you want to speed up the sync process from days to minutes, you can download a public snapshot
+from [here](https://snapshots.vechainlabs.io/node-hosting-testnet.tar.zst) (~48 GB compressed, ~100
+GB uncompressed). Extract into `/storage/prd-node-snapshots/node-hosting/testnet` or set
+`SNAPSHOT_PATH` to the correct path.
 
-_Next steps:_
-
-- We will invite you to present your project to some of the interviewers you have already met. This
-  is a 45-minute session; 30 minutes for presenting and 10-15 minutes for Q&A. Youʼre welcome to
-  invite questions and discussion throughout; we want to understand your thinking. Weʼre not judging
-  your presentation skills.
-
-_Task notes:_
-
-- You wonʼt have all the context you need on how we work to complete this task to the highest levels
-  of realism. Be creative and use assumptions about what we do. To help us understand your
-  submission, share those assumptions with us.
-- Itʼs fine if youʼre not sure about our current priorities; conjecture is OK.
-- We operate in a low-information environment, so youʼll need to use your best judgment on what
-  might be an interesting response to this task. We want to understand your ideas and approach,
-  which is more important than trying to find a perfect outcome.
-- Please do not share or publish this exercise brief or your final work publicly.
-
-### Project Prompt
-
-**Topic:** Designing an End-to-End Observability Pipeline (Metrics, Logs, Traces)
-
-**Goal:** We’re looking to understand how you would design a complete local observability pipeline
-that ingests and stores metrics, logs, and traces from applications. Your solution should reflect
-strong judgment in system architecture, tooling, and operational best practices.
-
-**Task:** Propose and document an approach for building an observability stack that operates
-entirely on your local machine. You may select any architecture, tools, or strategies you believe
-are appropriate to ensure reliability, repeatability, and operability.
-
-**Requirements:**
-
-- You define the architecture, tools, and observability signals.
-- Use a local Kubernetes environment, if possible.
-- Ensure data is persisted locally using Kubernetes PersistentVolumes.
-- The system should be able to receive telemetry via OTLP, including: Metrics scraping (e.g.,
-  Prometheus pull model)
-- Define three logical pipelines: one each for metrics, logs, and traces.
-- Include dataflow diagrams (context + sequence) showing how telemetry flows through your system.
-- Demonstrate basic internal operability signals of your choice (e.g., health checks, alerting,
-  dashboards, service logs).
-
-**Optional (Bonus):** You’re welcome to include a basic proof-of-concept setup, with example
-configuration or sample apps to demonstrate your design. This is not required, but appreciated.
-
-## Implementation - Local Observability Stack with Docker Compose
-
-This stack runs two VeChain testnet nodes behind Envoy and a full observability pipeline
-using Prometheus, Loki, Tempo, Grafana, and an OpenTelemetry Collector.
-Logs are collected by a filelog/docker receiver and traces are generated by Envoy request tracing.
-
-Synthetic load is generated with a containerized k6 runner.
-The request mix is from real VeChain access logs and filtered by the OpenAPI schema.
-Profile file: `k6/requests.ndjson`.
-
-### Prerequisites
-
-- Docker + Docker Compose
-
-### Start the stack
+## Start the stack
 
 ```bash
-docker compose pull
-docker compose up -d
-docker compose ps
+docker compose up
 ```
 
-Before first startup (or when restoring snapshot data), run the init container:
-
-```bash
-docker compose run --rm node-volume-init
-```
-
-Behavior:
-
-- `USE_SNAPSHOT` controls copy behavior (default: `true`).
-- If `USE_SNAPSHOT=true` and snapshot mount has files, snapshots are copied into empty node volumes.
-- If the snapshot path does not exist (or is empty), no copy is attempted and empty volumes still
-  get ownership `1000:1000`.
-- If a target volume already contains files, copy is skipped and no ownership changes are made, to
-  avoid touching active node data.
-
-Optional overrides:
-
-- `USE_SNAPSHOT=false docker compose run --rm node-volume-init`
-- `SNAPSHOT_PATH=/storage/prd-node-snapshots/node-hosting/testnet docker compose run --rm node-volume-init`
-
-### Access endpoints
+## Access endpoints
 
 - Grafana: http://localhost:3000 (admin/admin)
 - Public VeChain API (Envoy): http://localhost:80
@@ -131,22 +59,7 @@ Optional overrides:
 - Loki: http://localhost:3100
 - Tempo: http://localhost:3200
 
-### Validate telemetry flow
-
-1. Prometheus targets: http://localhost:9090/targets
-   - Expect `otel-collector-metrics` and `prometheus` targets to be up.
-2. Grafana dashboard:
-   - Open the "Observability Overview" dashboard for node logs and up metrics.
-   - The VeChain log panel uses `{service_name="docker"} |= "pkg=node"` to filter node logs ingested by OTel.
-3. Traces:
-   - Send traffic through Envoy (for example `curl http://localhost:80/health`).
-   - Grafana Explore → Tempo datasource, search recent traces.
-   - Optional API check: `curl "http://localhost:3200/api/search?q={resource.service.name = \"edge-proxy\"}"`
-4. Node health logs:
-   - `docker logs -n 20 node-a`
-   - `docker logs -n 20 node-b`
-
-### Generate synthetic traffic with k6
+## Generate synthetic traffic with k6
 
 Run a quick smoke test:
 
@@ -154,32 +67,34 @@ Run a quick smoke test:
 ./scripts/run-smoke-test.sh
 ```
 
-Run a longer load profile, ramping up to a configurable number of maximum virtual users over a
-configurable duration. Default is 1000 VUs and 30s duration per stage, in 4 stages:
-
-1. 10% of maxVUs for 30s
-2. 25% of maxVUs for 30s
-3. 100% of maxVUs for 30s
-4. 0 VUs for 30s
+Optional: other test profiles are available:
 
 ```bash
-MAX_VUS=1000 STAGE_DURATION=30s ./scripts/run-load-test.sh
+# Soak test: 1,000 VUs for 1 hour - slowly ramp up to a large number of users
+./scripts/run-soak-test.sh
+
+# Saturation test: 5,000 VUs for 2 minutes, consumes all your resources and makes your fans go crazy
+./scripts/run-saturation-test.sh
 ```
 
-### Stop the stack
+## Validate telemetry flow
+
+1. Grafana
+   1. Dashboards: http://localhost:3000/dashboards
+   2. Metrics, traces and logs are available in the
+      [Observability overview](http://localhost:3000/d/5157ff4c-70fb-4b84-b0d5-21b6b1c36864/observability-overview)
+2. Prometheus targets: http://localhost:9090/targets
+   - Expect `otel-collector-metrics` and `prometheus` targets to be up.
+3. Tempo: http://localhost:3200/api/search?q={resource.service.name}
+
+## Stop and clean up
 
 ```bash
 docker compose down
 ```
 
-### Purge all networks, containers, images and volumes (use with caution)
+**Purge all networks, containers, images and volumes (use with caution):**
 
 ```bash
-./scripts/purge.sh
+./scripts/purge-docker.sh
 ```
-
-### Notes
-
-- VeChain node metrics are exposed at `:2112/metrics` per node.
-- Node data is persisted in `node_data_a` and `node_data_b` Docker volumes.
-- API is public via Envoy only; node P2P ports stay internal to Docker network.
