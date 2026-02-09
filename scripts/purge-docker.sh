@@ -20,6 +20,6 @@ fi
 docker network prune -f
 docker container prune -f
 docker image prune -af
-docker volume prune -f
+docker volume rm $(docker volume ls -q)
 
 echo "Docker purged."
